@@ -10,6 +10,14 @@ Content-Type: application/json
 }
 ### 
 
-## Test Register
-GET http://localhost:3001/api/auth/test
-Cookie: connect.sid=s%3ALSr-Cz2GTZeRO-DGrN_8eVJbcxz1ral6.ubijPB5n42I75EzJTHKy2DJTkkTxEYvXdlE2R1CVuCY
+## Test Logout
+DELETE http://localhost:3001/api/auth/me
+Cookie: connect.sid=s%3AJjdkGFAB1RljEorevZ8OnCzc4MDcu-Eo.TbumyH%2FbcjICgv%2BhJ9cJv58hqiQ047PrhGMgVb5rPc4
+###
+
+## Test Me
+GET http://localhost:3001/api/auth/me
+Cookie: connect.sid=s%3At8n1RwBI3ncoJAcDwE99vklljtwcFVL8.DI%2Fer0I8qh%2BRlOac1kBZGmgzTH2dOQIfwfdZ2T2RaLM
+###
+
+GET http://localhost:3001/api/pages/1
