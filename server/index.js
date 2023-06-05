@@ -8,6 +8,8 @@ const LocalStrategy = require("passport-local").Strategy; // username and passwo
 const session = require("express-session"); // enable sessions
 const userDao = require("./db/user-dao"); // module for accessing the user info in the DB
 const routes = require("./routes");
+const swaggerUi = require('swagger-ui-express')
+const swaggerFile = require('./swagger_output.json')
 /*** init express and set-up the middlewares ***/
 const app = express();
 app.use(morgan("dev"));
@@ -69,6 +71,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/api", routes);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile))
 
 // init express
 const port = 3001;
