@@ -1,0 +1,15 @@
+# Test
+
+## Test Login
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+    "username": "buffa@test.com",
+    "password": "password"
+}
+### 
+
+## Test Register
+GET http://localhost:3001/api/auth/test
+Cookie: connect.sid=s%3ALSr-Cz2GTZeRO-DGrN_8eVJbcxz1ral6.ubijPB5n42I75EzJTHKy2DJTkkTxEYvXdlE2R1CVuCY
