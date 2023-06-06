@@ -13,6 +13,8 @@ const filters = {
 };
 
 const pageBlocksCount = (blocks) => {
+  console.log(blocks);
+  blocks = blocks ?? [];
   return {
     header: blocks.filter((b) => b.type === "header").length,
     paragraph: blocks.filter((b) => b.type === "paragraph").length,
@@ -69,14 +71,15 @@ const getPageById = (id) => {
       if (row === undefined) {
         resolve({
           error: "Page not found.",
+          code: 404,
         });
       } else {
         const page = {
           id: row.id,
           title: row.title,
           author: row.author,
-          published_at: row.published_at,
-          created_at: row.created_at,
+          published_at: row.published_at ? dayjs(row.published_at) : null,
+          created_at: dayjs(row.created_at),
         };
         getBlocks(page.id)
           .then((blocks) => {
@@ -85,6 +88,7 @@ const getPageById = (id) => {
           })
           .catch((err) => {
             reject(err);
+            return;
           });
       }
     });
@@ -111,8 +115,8 @@ const getPagesHead = (filterName) => {
         published_at: row.published_at,
         created_at: row.created_at,
       }));
-
-      if (filterName && filterName in Object.keys(filters)) {
+      console.log(filterName, Object.keys(filters));
+      if (filterName && Object.keys(filters).includes(filterName)) {
         resolve(pages.filter(filters[filterName]));
       } else {
         resolve(pages);
@@ -132,6 +136,7 @@ const createPage = (page, blocks) => {
     if (page.author === undefined || page.author === null) {
       reject({
         error: "Author is required.",
+        code: 400,
       });
     }
     if (
@@ -141,24 +146,33 @@ const createPage = (page, blocks) => {
     ) {
       reject({
         error: "Not a valid publish date.",
+        code: 400,
       });
     }
     if (!Array.isArray(blocks)) {
       reject({
         error: "blocks field is not an array.",
+        extra: blocks,
+        code: 400,
       });
     }
     if (
       blocks.length <= 1 ||
-      (blocks.some((b) => b.type === "header") &&
-        blocks.some((b) => b.type !== "header"))
+      !(
+        blocks.some((b) => b.type === "header") &&
+        blocks.some((b) => b.type !== "header")
+      )
     ) {
       reject({
         error:
           "blocks field does not contain the minimum blocks required (at least one header and something else).",
+        extra: blocks,
+        code: 400,
       });
     }
-    page.published_at = dayjs(page.published_at).toISOString();
+    page.published_at = page.published_at
+      ? dayjs(page.published_at).toISOString()
+      : null;
     const sql =
       "INSERT INTO pages(title, published_at, author, created_at) VALUES(?,?,?,?)";
 
@@ -170,7 +184,7 @@ const createPage = (page, blocks) => {
           reject(err);
           return;
         }
-        blocks_insert_promises = blocks.map((block, index) =>
+        const blocks_insert_promises = blocks.map((block, index) =>
           appendBlock(this.lastID, { ...block, order: index })
         );
         Promise.all(blocks_insert_promises)
@@ -179,6 +193,7 @@ const createPage = (page, blocks) => {
           })
           .catch((err) => {
             reject(err);
+            return;
           });
       }
     );
@@ -204,6 +219,7 @@ const deletePage = (id) => {
         })
         .catch((err) => {
           reject(err);
+          return;
         });
     });
   });
@@ -223,9 +239,12 @@ const updatePage = (page) => {
     ) {
       reject({
         error: "Not a valid publish date.",
+        code: 400,
       });
     }
-    page.published_at = dayjs(page.published_at).toISOString();
+    page.published_at = page.published_at
+      ? dayjs(page.published_at).toISOString()
+      : null;
     const sql = "UPDATE pages SET title = ?, published_at = ? WHERE id = ?";
     db.run(sql, [page.title, page.published_at, page.id], function (err) {
       if (err) reject(err);
@@ -240,11 +259,14 @@ const updatePage = (page) => {
  * @returns {Promise<Block[]|Error>}
  */
 const getBlocks = (pageId) => {
-  console.log("getBlocks", pageId)
+  console.log("getBlocks", pageId);
   return new Promise((resolve, reject) => {
     const sql = "SELECT * FROM blocks WHERE page_id = ? ORDER BY `order` ASC";
     db.all(sql, [pageId], (err, rows) => {
-      if (err) reject(err);
+      if (err) {
+        reject(err);
+        return;
+      }
       const blocks = rows.map((row) => ({
         id: row.id,
         page_id: row.page_id,
@@ -273,7 +295,7 @@ const appendBlock = (pageId, block) => {
       [pageId, block.type, block.content, block.order],
       function (err) {
         if (err) reject(err);
-        resolve({ id: this.lastID, ...block });
+        else resolve({ id: this.lastID, ...block });
       }
     );
   });
@@ -283,9 +305,8 @@ const deleteAllBlocksOfPage = (pageId) => {
   return new Promise((resolve, reject) => {
     const sql = "DELETE FROM blocks WHERE page_id = ?";
     db.run(sql, [pageId], function (err) {
-      if (err) {
-        reject(err);
-      } else resolve(null);
+      if (err) reject(err);
+      else resolve(null);
     });
   });
 };
@@ -295,17 +316,23 @@ const deleteAllBlocksOfPage = (pageId) => {
  * @param {Block} block
  * @returns {Promise<null|Error>}
  */
-const deleteBlock = (block) => {
+const deleteBlock = (pageId, blockId) => {
   return new Promise((resolve, reject) => {
-    getPageById(block.page_id).then((page) => {
-      if (page.error) reject(page);
+    getPageById(pageId).then((page) => {
       const bc = pageBlocksCount(page.blocks);
+      const block = page.blocks.find((b) => b.id === blockId);
+      if (block === undefined) {
+        reject({ error: `Block ${blockId} not found in page ${pageId}.`, code: 404 });
+        return;
+      }
       bc[block.type] -= 1;
       if (bc.header === 0 || bc.paragraph + bc.image === 0) {
         reject({
+          code: 400,
           error:
             "Page must contain at least one header and one paragraph or image.",
         });
+        return;
       }
       const sql = "DELETE FROM blocks WHERE id = ?";
       db.run(sql, [block.id], function (err) {
@@ -321,20 +348,24 @@ const deleteBlock = (block) => {
  * @param {Block} block
  * @returns {Promise<Block|Error>}
  */
-const updateBlock = (block) => {
+const updateBlock = (pageId, blockId, block) => {
   return new Promise((resolve, reject) => {
-    getPageById(block.page_id)
+    getPageById(pageId)
       .then((page) => {
-        if (page.error) reject(page);
-        const oldBlock = page.blocks.find((b) => b.id === block.id);
+        const oldBlock = page.blocks.find((b) => b.id === blockId);
+        if (oldBlock === undefined) {
+          reject({ error: "Block not found.", code: 404 });
+          return;
+        }
+        block = { ...oldBlock, ...block };
         const bc = pageBlocksCount(page.blocks);
-        if (oldBlock === undefined) reject({ error: "Block not found." });
         bc[oldBlock.type] -= 1;
         bc[block.type] += 1;
         if (bc.header === 0 || bc.paragraph + bc.image === 0) {
           reject({
             error:
               "Page must contain at least one header and one paragraph or image.",
+            code: 400,
           });
         }
         const sql =
@@ -369,6 +400,7 @@ const updateBlocks = (newBlocks) => {
       reject({
         error:
           "blocks not valid. either it is an empty array or the page_id's don't match throughout the array",
+        code: 400,
       });
     }
     // Check if page is still valid
@@ -377,10 +409,14 @@ const updateBlocks = (newBlocks) => {
       reject({
         error:
           "Page must contain at least one header and one paragraph or image.",
+        code: 400,
       });
     }
     const deleteResponse = await deleteAllBlocksOfPage(newBlocks[0].page_id);
-    if (deleteResponse.error) reject(deleteResponse);
+    if (deleteResponse.error) {
+      reject(deleteResponse);
+      return;
+    }
 
     const promises = newBlocks.map((block) => {
       appendBlock(block.page_id, block);
@@ -391,6 +427,7 @@ const updateBlocks = (newBlocks) => {
       })
       .catch((err) => {
         reject(err);
+        return;
       });
   });
 };

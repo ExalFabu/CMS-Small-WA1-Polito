@@ -26,13 +26,14 @@ INSERT INTO "users" VALUES (4,'user@test.com','User', 'ciaociaoehciao', 'e2abd4f
 DROP TABLE IF EXISTS "pages";
 CREATE TABLE "pages" (
 	"id"	INTEGER PRIMARY KEY AUTOINCREMENT,
+	"title" TEXT,
 	"author" INTEGER,
 	"created_at"	TEXT,
 	"published_at"	TEXT
 );
 
-INSERT INTO "pages" VALUES (1,2,'2023-01-01T00:00:00','2023-01-01T00:00:00');
-INSERT INTO "pages" VALUES (2,3,'2023-01-01T00:00:00',NULL);
+INSERT INTO "pages" VALUES (1,2, 'PageTitle 1', '2023-01-01T00:00:00','2023-01-01T00:00:00');
+INSERT INTO "pages" VALUES (2,3, 'PageTitle 2', '2023-01-01T00:00:00',NULL);
 
 DROP TABLE IF EXISTS "blocks";
 CREATE TABLE "blocks" (

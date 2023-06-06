@@ -1,5 +1,5 @@
 "use strict";
-
+require("dotenv").config();
 const express = require("express");
 const morgan = require("morgan"); // logging middleware
 const cors = require("cors");
@@ -8,8 +8,8 @@ const LocalStrategy = require("passport-local").Strategy; // username and passwo
 const session = require("express-session"); // enable sessions
 const userDao = require("./db/user-dao"); // module for accessing the user info in the DB
 const routes = require("./routes");
-const swaggerUi = require('swagger-ui-express')
-const swaggerFile = require('./swagger_output.json')
+const swaggerUi = require("swagger-ui-express");
+const swaggerFile = require("./swagger_output.json");
 /*** init express and set-up the middlewares ***/
 const app = express();
 app.use(morgan("dev"));
@@ -55,12 +55,10 @@ passport.deserializeUser((id, done) => {
     });
 });
 
-
-// set up the session
 app.use(
   session({
     // by default, Passport uses a MemoryStore to keep track of the sessions
-    secret: "esame1cmssmall-exalfabublablablabsdjahfbsaoudfgyahfbec aoygfzcn aovayuvfeu", //personalize this random string, should be a secret value
+    secret: process.env.COOKIE_SECRET, //personalize this random string, should be a secret value
     resave: false,
     saveUninitialized: false,
   })
@@ -71,7 +69,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/api", routes);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile))
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 // init express
 const port = 3001;

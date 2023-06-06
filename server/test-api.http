@@ -5,19 +5,31 @@ POST http://localhost:3001/api/auth/login
 Content-Type: application/json
 
 {
-    "username": "buffa@test.com",
+    "username": "edit2@test.com",
     "password": "password"
 }
 ### 
 
-## Test Logout
-DELETE http://localhost:3001/api/auth/me
-Cookie: connect.sid=s%3AJjdkGFAB1RljEorevZ8OnCzc4MDcu-Eo.TbumyH%2FbcjICgv%2BhJ9cJv58hqiQ047PrhGMgVb5rPc4
+GET http://localhost:3001/api/pages/5
 ###
 
-## Test Me
-GET http://localhost:3001/api/auth/me
-Cookie: connect.sid=s%3At8n1RwBI3ncoJAcDwE99vklljtwcFVL8.DI%2Fer0I8qh%2BRlOac1kBZGmgzTH2dOQIfwfdZ2T2RaLM
+PUT http://localhost:3001/api/pages/5
+Content-Type: application/json
+Cookie: connect.sid=s%3AxuAAGeFukwgepz_jl_0N7uj2lSqFVMhq.kcarR5MfpLchHF9YxHoLxkyRCJyJilNX7RH9Aht%2BBRs
+
+{
+  "id": 5,
+  "title": "Page Title from swagger upd",
+  "author": 3
+}
 ###
 
-GET http://localhost:3001/api/pages/1
+## Delete block from page
+DELETE http://localhost:3001/api/pages/5/block/11
+Content-Type: application/json
+Cookie: connect.sid=s%3AsBk5K1FMrpcVYE1GxIgxF4iJOOzAbmnm.pTy8BHi2dLPeKSyupacwSoMQO%2B0v8BTO3KkU5BS4z6Q
+###
+
+DELETE http://localhost:3001/api/pages/5/block/9
+Content-Type: application/json
+Cookie: connect.sid=s%3AsBk5K1FMrpcVYE1GxIgxF4iJOOzAbmnm.pTy8BHi2dLPeKSyupacwSoMQO%2B0v8BTO3KkU5BS4z6Q

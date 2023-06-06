@@ -9,30 +9,36 @@
   "basePath": "/api/",
   "tags": [
     {
-      "name": "Auth",
-      "description": "Authentication"
+      "name": "User",
+      "description": "Authentication and User related"
     },
     {
       "name": "Pages",
-      "description": "Pages"
+      "description": "Pages and blocks manipulation"
     }
   ],
   "schemes": [
     "http"
   ],
-  "securityDefinitions": {},
+  "securityDefinitions": {
+    "CookieAuth": {
+      "type": "apiKey",
+      "in": "cookie",
+      "name": "connect.sid"
+    }
+  },
   "paths": {
     "/auth/login": {
       "post": {
         "tags": [
-          "Auth"
+          "User"
         ],
         "description": "Endpoint to perform login",
         "parameters": [
           {
-            "name": "obj",
+            "name": "Credentials",
             "in": "body",
-            "description": "Some description...",
+            "description": "Credential to use for login",
             "schema": {
               "type": "object",
               "properties": {
@@ -54,40 +60,242 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "User successfully logged in",
+            "schema": {
+              "$ref": "#/definitions/User"
+            },
+            "headers": {
+              "Set-Cookie": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Cookie with session id"
+              }
+            }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Wrong credentials",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
     },
     "/auth/me": {
       "get": {
-        "description": "",
+        "tags": [
+          "User"
+        ],
+        "description": "Endpoint to get the current logged in user",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "User successfully logged in",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "User not logged in",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Not logged in"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         }
       },
       "delete": {
-        "description": "",
+        "tags": [
+          "User"
+        ],
+        "description": "Endpoint to logout the current logged in user",
         "parameters": [],
-        "responses": {}
+        "responses": {
+          "200": {
+            "description": "User successfully logged out"
+          },
+          "401": {
+            "description": "User not logged in",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Not authenticated"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
       }
     },
     "/pages/": {
       "get": {
-        "description": "",
+        "tags": [
+          "Pages"
+        ],
+        "description": "Endpoint to get all pages",
         "parameters": [
           {
             "name": "filter",
             "in": "query",
+            "description": "Filter to apply to the pages list",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "published",
+                "drafts",
+                "scheduled"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of PageHead objects",
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/PageHead"
+            },
+            "collectionFormat": "multi"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Pages"
+        ],
+        "description": "Endpoint to create a new page",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "body",
+            "description": "Page object to add",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Page"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page object",
+            "schema": {
+              "$ref": "#/definitions/Page"
+            }
+          },
+          "403": {
+            "description": "You are not allowed to create a page",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Error adding page to database",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/pages/{id}": {
+      "get": {
+        "tags": [
+          "Pages"
+        ],
+        "description": "Endpoint to get a page by id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Page id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page object",
+            "schema": {
+              "$ref": "#/definitions/Page"
+            }
+          },
+          "500": {
+            "description": "Error retrieving page from database",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Pages"
+        ],
+        "description": "Endpoint to update a page metadata by id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Page id"
+          },
+          {
+            "name": "page",
+            "in": "body",
+            "description": "Page object to update",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PageHead"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page object",
+            "schema": {
+              "$ref": "#/definitions/PageHead"
+            }
+          },
+          "403": {
+            "description": "You are not allowed to edit this page",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Error updating page",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Pages"
+        ],
+        "description": "Endpoint to delete a page and all its blocks",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
             "type": "string"
           }
         ],
@@ -95,24 +303,91 @@
           "200": {
             "description": "OK"
           },
-          "500": {
-            "description": "Internal Server Error"
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/pages/{id}/block/{blockId}": {
+      "put": {
+        "tags": [
+          "Pages"
+        ],
+        "description": "Endpoint to update a block by id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "blockId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "403": {
+            "description": "Forbidden"
           }
         }
       },
-      "post": {
-        "description": "",
+      "delete": {
+        "tags": [
+          "Pages"
+        ],
+        "description": "Endpoint to delete a block by id",
         "parameters": [
           {
-            "name": "body",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "blockId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/pages/{id}/block": {
+      "post": {
+        "tags": [
+          "Pages"
+        ],
+        "description": "Endpoint to add a block to a page",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Page id"
+          },
+          {
+            "name": "block",
             "in": "body",
+            "description": "Block object to add",
+            "required": true,
             "schema": {
-              "type": "object",
-              "properties": {
-                "author_id": {
-                  "example": "any"
-                }
-              }
+              "$ref": "#/definitions/Block"
             }
           }
         ],
@@ -120,162 +395,18 @@
           "200": {
             "description": "OK"
           },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/pages/{id}": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      },
-      "put": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
           "403": {
             "description": "Forbidden"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      },
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/pages/{id}/block/{blockId}": {
-      "put": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "blockId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      },
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "blockId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/pages/{id}/block": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }
     },
     "/pages/{id}/blocks": {
       "put": {
-        "description": "",
+        "tags": [
+          "Pages"
+        ],
+        "description": "Endpoint to update all blocks of a page, removing the previous ones",
         "parameters": [
           {
             "name": "id",
@@ -290,30 +421,149 @@
           },
           "403": {
             "description": "Forbidden"
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }
     }
   },
   "definitions": {
-    "UserCredentials": {
+    "Error": {
       "type": "object",
       "properties": {
+        "error": {
+          "type": "string",
+          "example": "Error message"
+        },
+        "details": {
+          "type": "string",
+          "example": "Error details"
+        }
+      },
+      "required": [
+        "error"
+      ]
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 1
+        },
         "username": {
           "type": "string",
           "example": "buffa@test.com"
         },
-        "password": {
+        "name": {
           "type": "string",
-          "example": "password"
+          "example": "Buffa"
+        },
+        "role": {
+          "type": "string",
+          "example": "admin"
         }
       },
       "required": [
         "username",
-        "password"
+        "name",
+        "role"
+      ]
+    },
+    "PageHead": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 1
+        },
+        "title": {
+          "type": "string",
+          "example": "Page Title"
+        },
+        "created_at": {
+          "type": "string",
+          "example": "2021-01-01T00:00:00.000Z"
+        },
+        "published_at": {
+          "type": "string",
+          "example": "2021-01-01T00:00:00.000Z"
+        },
+        "author": {
+          "type": "number",
+          "example": 1
+        }
+      },
+      "required": [
+        "title",
+        "created_at",
+        "author"
+      ]
+    },
+    "Block": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 1
+        },
+        "type": {
+          "type": "string",
+          "example": "header"
+        },
+        "content": {
+          "type": "string",
+          "example": "Header content"
+        },
+        "page_id": {
+          "type": "number",
+          "example": 1
+        },
+        "order": {
+          "type": "number",
+          "example": 1
+        }
+      },
+      "required": [
+        "type",
+        "content",
+        "page_id",
+        "order"
+      ]
+    },
+    "Page": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "example": 1
+        },
+        "title": {
+          "type": "string",
+          "example": "Page Title"
+        },
+        "created_at": {
+          "type": "string",
+          "example": "2021-01-01T00:00:00.000Z"
+        },
+        "published_at": {
+          "type": "string",
+          "example": "2021-01-01T00:00:00.000Z"
+        },
+        "author": {
+          "type": "number",
+          "example": 1
+        },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Block"
+          }
+        }
+      },
+      "required": [
+        "title",
+        "created_at",
+        "author"
       ]
     }
   }
