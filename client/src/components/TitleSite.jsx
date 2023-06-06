@@ -1,17 +1,20 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Button, Col, Row, Container, Form } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare, faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
+import api from "../api/meta";
 
 const TitleSite = ({ user }) => {
-  const [siteName, setSiteName] = React.useState("Nome del Sito");
+  const [siteName, setSiteName] = React.useState("");
+  useEffect(() => {
+    api.getSiteName().then((siteName) => setSiteName(siteName));
+  }, []);
   const isEditable = user && user.role === "admin";
   const [editing, setEditing] = React.useState(false);
   const [newSiteName, setNewSiteName] = React.useState(siteName);
 
   const updateSiteName = (newSiteName) => {
-    setSiteName(newSiteName);
-    // TODO: call api to update site name
+    api.setSiteName(newSiteName).then(() => setSiteName(newSiteName));
   };
 
   return (
@@ -19,7 +22,7 @@ const TitleSite = ({ user }) => {
       <Container>
         <Row className="align-items-center">
           <Col>
-            {!editing ? <h1 className="text-center" >{siteName}</h1> : <></>}
+            {!editing ? <h1 className="text-center">{siteName}</h1> : <></>}
             {editing ? (
               <Form.Control
                 type="text"

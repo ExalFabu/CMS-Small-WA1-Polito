@@ -28,6 +28,77 @@
     }
   },
   "paths": {
+    "/meta/name": {
+      "get": {
+        "tags": [
+          "Site"
+        ],
+        "description": "Endpoint to get the site name",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Site name successfully retrieved",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "CMSmall"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Site"
+        ],
+        "description": "Endpoint to update the site name",
+        "parameters": [
+          {
+            "name": "Site",
+            "in": "body",
+            "description": "Site name to update",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "CMSmall"
+                }
+              },
+              "required": [
+                "name"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Site name successfully updated"
+          },
+          "401": {
+            "description": "Not authorized",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Error while updating site name",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/auth/login": {
       "post": {
         "tags": [

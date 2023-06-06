@@ -32,8 +32,8 @@ CREATE TABLE "pages" (
 	"published_at"	TEXT
 );
 
-INSERT INTO "pages" VALUES (1,2, 'PageTitle 1', '2023-01-01T00:00:00','2023-01-01T00:00:00');
-INSERT INTO "pages" VALUES (2,3, 'PageTitle 2', '2023-01-01T00:00:00',NULL);
+INSERT INTO "pages" VALUES (1, 'PageTitle 1',2, '2023-01-01T00:00:00','2023-01-01T00:00:00');
+INSERT INTO "pages" VALUES (2, 'PageTitle 2',3, '2023-01-01T00:00:00',NULL);
 
 DROP TABLE IF EXISTS "blocks";
 CREATE TABLE "blocks" (
@@ -53,5 +53,12 @@ INSERT INTO "blocks" VALUES (6,2,'paragraph','Paragraph 2.1',2);
 INSERT INTO "blocks" VALUES (7,2,'paragraph','Paragraph 2.2',3);
 INSERT INTO "blocks" VALUES (8,2,'paragraph','Paragraph 2.3',4);
 
+DROP TABLE IF EXISTS "site";
+CREATE TABLE "site" (
+	"id"	INTEGER PRIMARY KEY AUTOINCREMENT,
+	"title"	TEXT
+);
+
+INSERT INTO "site" VALUES (1,'CMSmall');
 
 COMMIT;
