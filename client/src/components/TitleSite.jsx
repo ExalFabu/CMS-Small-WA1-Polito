@@ -1,14 +1,31 @@
-import React, { useEffect } from "react";
-import { Button, Col, Row, Container, Form } from "react-bootstrap";
+import React, { useEffect, useState } from "react";
+import {
+  Button,
+  Col,
+  Row,
+  Container,
+  Form,
+  Stack,
+  FloatingLabel,
+} from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPenToSquare, faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPenToSquare,
+  faFloppyDisk,
+  faCancel,
+} from "@fortawesome/free-solid-svg-icons";
 import api from "../api/meta";
+import { useLoaderData, useSubmit } from "react-router-dom";
 
 const TitleSite = ({ user }) => {
-  const [siteName, setSiteName] = React.useState("");
+  const [siteName, setSiteName] = useState("");
   useEffect(() => {
     api.getSiteName().then((siteName) => setSiteName(siteName));
   }, []);
+  useEffect(() => {
+    document.title = siteName;
+    setNewSiteName(siteName);
+  }, [siteName]);
   const isEditable = user && user.role === "admin";
   const [editing, setEditing] = React.useState(false);
   const [newSiteName, setNewSiteName] = React.useState(siteName);
@@ -18,46 +35,51 @@ const TitleSite = ({ user }) => {
   };
 
   return (
-    <div className="mx-auto">
-      <Container>
-        <Row className="align-items-center">
-          <Col>
-            {!editing ? <h1 className="text-center">{siteName}</h1> : <></>}
-            {editing ? (
-              <Form.Control
-                type="text"
-                value={newSiteName}
-                onChange={(ev) => setNewSiteName(ev.target.value)}
-              />
-            ) : (
-              <></>
-            )}
-          </Col>
-          <Col xs="2" hidden={!isEditable}>
-            {!editing ? (
-              <Button size="sm" onClick={() => setEditing(true)}>
-                <FontAwesomeIcon icon={faPenToSquare} />
-              </Button>
-            ) : (
-              <></>
-            )}
-            {editing ? (
-              <Button
-                size="sm"
-                onClick={() => {
-                  setEditing(false);
-                  updateSiteName(newSiteName);
-                }}
-              >
-                <FontAwesomeIcon icon={faFloppyDisk} />
-              </Button>
-            ) : (
-              <></>
-            )}
-          </Col>
-        </Row>
-      </Container>
-    </div>
+    <Row className="align-items-center w-100 justify-content-center">
+      <Col style={{"max-width": "fit-content"}}>
+        {!editing ? (
+          <h1 className="text-center">{siteName}</h1>
+        ) : (
+          <FloatingLabel label="Nome del Sito">
+            <Form.Control
+              type="text"
+              value={newSiteName}
+              onChange={(ev) => setNewSiteName(ev.target.value)}
+            />
+          </FloatingLabel>
+        )}
+      </Col>
+      <Col xs="1" hidden={!isEditable}>
+        {!editing ? (
+          <Button size="sm" onClick={() => setEditing(true)}>
+            <FontAwesomeIcon icon={faPenToSquare} />
+          </Button>
+        ) : (
+          <Stack gap={2}>
+            <Button
+              size="sm"
+              variant="outline-success"
+              onClick={() => {
+                setEditing(false);
+                updateSiteName(newSiteName);
+              }}
+            >
+              <FontAwesomeIcon icon={faFloppyDisk} />
+            </Button>
+            <Button
+              size="sm"
+              variant="outline-secondary"
+              onClick={() => {
+                setNewSiteName(siteName);
+                setEditing(false);
+              }}
+            >
+              <FontAwesomeIcon icon={faCancel} />
+            </Button>
+          </Stack>
+        )}
+      </Col>
+    </Row>
   );
 };
 

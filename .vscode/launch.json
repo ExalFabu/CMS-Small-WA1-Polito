@@ -13,7 +13,7 @@
             ],
             "localRoot": "${workspaceFolder}\\server",
             "program": "${workspaceFolder}\\server\\index.js",
-            "runtimeExecutable": "node"
+            "runtimeExecutable": "nodemon"
         }
     ]
 }

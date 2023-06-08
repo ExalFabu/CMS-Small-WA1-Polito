@@ -1,11 +1,12 @@
 import React from "react";
 import { Navbar } from "react-bootstrap";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useNavigate, useRevalidator } from "react-router-dom";
 import TitleSite from "./TitleSite";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowRightToBracket,
     faArrowRightFromBracket,
+    faArrowsRotate,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { logout } from "../api/auth";
@@ -14,17 +15,23 @@ const Header = ({ user, logout: stateLogout }) => {
   const doLogout = () => {
     logout().then(() => stateLogout());
   };
+  const {revalidate} = useRevalidator();
+  const reload = () => {
+    revalidate();
+  };
   return (
     <>
       <Navbar
         bg="light"
         variant="light"
         sticky="top"
-        className="mb-4 px-4 justify-around"
+        className="mb-4 px-4 justify-content-between"
       >
-        <Navbar.Brand>
+        <Navbar.Brand className="d-flex align-content-center gap-1">
           <Link to="/">Home</Link>
+          <FontAwesomeIcon cursor={"pointer"} className="m-2" icon={faArrowsRotate} onClick={reload} />
         </Navbar.Brand>
+
 
         <TitleSite user={user} />
         <Navbar.Brand className="me-0">

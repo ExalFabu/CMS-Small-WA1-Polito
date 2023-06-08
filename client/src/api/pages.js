@@ -49,7 +49,7 @@ export const getPage = (id) => {
     });
 }
 
-export const updatePage = (id, page) => {
+export const updatePageMetadata = (id, page) => {
     return new Promise((resolve, reject) => {
         fetch(`${URL}/pages/${id}`, {
             method: "PUT",
@@ -76,10 +76,39 @@ export const updatePage = (id, page) => {
     });
 }
 
+export const updatePageBlocks = (id, blocks) => {
+    return new Promise((resolve, reject) => {
+        fetch(`${URL}/pages/${id}/blocks`, {
+            method: "PUT",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(blocks),
+        })
+        .then((res) => {
+            if (res.status === 200) {
+                res.json().then((data) => {
+                    resolve(data);
+                });
+            } else {
+                res.json().then((data) => {
+                    reject(data);
+                });
+            }
+        })
+        .catch((err) => {
+            reject(err);
+        });
+    });
+}
+
+
 
 
 export default {
     getPages,
     getPage,
-    updatePage,
+    updatePageMetadata,
+    updatePageBlocks,
 }

@@ -62,7 +62,7 @@ const pageBlocksCount = (blocks) => {
  */
 const getPageById = (id) => {
   return new Promise((resolve, reject) => {
-    const sql = "SELECT * FROM pages WHERE id = ?";
+    const sql = "SELECT p.*, u.name as author_name FROM pages p, users u WHERE p.id = ?";
     db.get(sql, [id], (err, row) => {
       if (err) {
         reject(err);
@@ -78,8 +78,8 @@ const getPageById = (id) => {
           id: row.id,
           title: row.title,
           author: row.author,
-          published_at: row.published_at ? dayjs(row.published_at) : null,
-          created_at: dayjs(row.created_at),
+          published_at: row.published_at,
+          created_at: row.created_at,
         };
         getBlocks(page.id)
           .then((blocks) => {
@@ -102,7 +102,7 @@ const getPageById = (id) => {
  */
 const getPagesHead = (filterName) => {
   return new Promise((resolve, reject) => {
-    const sql = "SELECT * FROM pages";
+    const sql = "SELECT p.*, a.name as author_name FROM pages p, users a WHERE a.id = p.author";
     db.all(sql, [], (err, rows) => {
       if (err) {
         reject(err);
@@ -114,6 +114,7 @@ const getPagesHead = (filterName) => {
         author: row.author,
         published_at: row.published_at,
         created_at: row.created_at,
+        author_name: row.author_name,
       }));
       console.log(filterName, Object.keys(filters));
       if (filterName && Object.keys(filters).includes(filterName)) {
@@ -245,8 +246,8 @@ const updatePage = (page) => {
     page.published_at = page.published_at
       ? dayjs(page.published_at).toISOString()
       : null;
-    const sql = "UPDATE pages SET title = ?, published_at = ? WHERE id = ?";
-    db.run(sql, [page.title, page.published_at, page.id], function (err) {
+    const sql = "UPDATE pages SET title = ?, published_at = ?, author = ? WHERE id = ?";
+    db.run(sql, [page.title, page.published_at, page.author, page.id], function (err) {
       if (err) reject(err);
       else resolve(page);
     });
@@ -312,7 +313,7 @@ const deleteAllBlocksOfPage = (pageId) => {
 };
 
 /**
- * Deletes a block only if the page would still be valid
+ * Deletes a block without checking if the page would still be valid, use updateBlocks instead
  * @param {Block} block
  * @returns {Promise<null|Error>}
  */
@@ -325,15 +326,7 @@ const deleteBlock = (pageId, blockId) => {
         reject({ error: `Block ${blockId} not found in page ${pageId}.`, code: 404 });
         return;
       }
-      bc[block.type] -= 1;
-      if (bc.header === 0 || bc.paragraph + bc.image === 0) {
-        reject({
-          code: 400,
-          error:
-            "Page must contain at least one header and one paragraph or image.",
-        });
-        return;
-      }
+      
       const sql = "DELETE FROM blocks WHERE id = ?";
       db.run(sql, [block.id], function (err) {
         if (err) reject(err);
@@ -344,7 +337,7 @@ const deleteBlock = (pageId, blockId) => {
 };
 
 /**
- * Updates a block only if the page would still be valid
+ * Updates a block without checking if the page would still be valid, use updateBlocks instead
  * @param {Block} block
  * @returns {Promise<Block|Error>}
  */
@@ -357,16 +350,14 @@ const updateBlock = (pageId, blockId, block) => {
           reject({ error: "Block not found.", code: 404 });
           return;
         }
-        block = { ...oldBlock, ...block };
-        const bc = pageBlocksCount(page.blocks);
-        bc[oldBlock.type] -= 1;
-        bc[block.type] += 1;
-        if (bc.header === 0 || bc.paragraph + bc.image === 0) {
-          reject({
-            error:
-              "Page must contain at least one header and one paragraph or image.",
-            code: 400,
-          });
+        // If are equals skip the update
+        if (
+          oldBlock.type === block.type &&
+          oldBlock.content === block.content &&
+          oldBlock.order === block.order
+        ) {
+          resolve(block);
+          return;
         }
         const sql =
           "UPDATE blocks SET type = ?, content = ?, `order` = ? WHERE id = ?";
@@ -390,12 +381,12 @@ const updateBlock = (pageId, blockId, block) => {
  * @param {Block[]} newBlocks
  * @returns {Promise<Block[]|Error>}
  */
-const updateBlocks = (newBlocks) => {
+const updateBlocks = (page_id, newBlocks) => {
   return new Promise(async (resolve, reject) => {
     if (
       !Array.isArray(newBlocks) ||
       newBlocks.length === 0 ||
-      newBlocks.some((b) => b.page_id !== newBlocks[0].page_id)
+      newBlocks.some((b) => b.page_id !== page_id)
     ) {
       reject({
         error:
@@ -412,18 +403,29 @@ const updateBlocks = (newBlocks) => {
         code: 400,
       });
     }
-    const deleteResponse = await deleteAllBlocksOfPage(newBlocks[0].page_id);
-    if (deleteResponse.error) {
+    const page = await getPageById(page_id);
+    if (!page || page.error) {
       reject(deleteResponse);
       return;
     }
 
-    const promises = newBlocks.map((block) => {
-      appendBlock(block.page_id, block);
-    });
-    Promise.all(promises)
+    // Delete missing blocks
+    const deletePromises = page.blocks
+      .filter((b) => !newBlocks.some((nb) => nb.id === b.id))
+      .map((b) => deleteBlock(page_id, b.id));
+    
+    // Add new blocks
+    const addPromises = newBlocks
+      .filter((nb) => !page.blocks.some((b) => b.id === nb.id))
+      .map((nb) => appendBlock(page_id, nb));
+
+    const editPromises = newBlocks
+      .filter((nb) => page.blocks.some((b) => b.id === nb.id))
+      .map((nb) => updateBlock(page_id, nb.id, nb));
+
+    Promise.all([...deletePromises, ...addPromises, ...editPromises])
       .then((blocks) => {
-        resolve(blocks);
+        resolve(blocks.filter((b) => b !== null));
       })
       .catch((err) => {
         reject(err);
@@ -439,8 +441,6 @@ module.exports = {
   appendBlock,
   deletePage,
   updatePage,
-  updateBlock,
-  deleteBlock,
   updateBlocks,
   filters,
 };

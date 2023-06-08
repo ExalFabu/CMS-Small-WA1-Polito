@@ -13,18 +13,10 @@ const handleError = (err, res, message) => {
   res.status(code).json({ error: message, details: err });
 };
 
-
 router.get("/", function (req, res) {
   //
   // #swagger.tags = ['Pages']
   // #swagger.description = 'Endpoint to get all pages'
-  /*
-    #swagger.parameters['filter'] = {
-        in: 'query',
-        description: 'Filter to apply to the pages list',
-        schema: { '@enum': ['all', 'published', 'drafts', 'scheduled'] }
-    },
-    */
   /*
    #swagger.responses[200] = {
         description: 'List of PageHead objects',
@@ -33,11 +25,20 @@ router.get("/", function (req, res) {
         collectionFormat: 'multi'
     }
    */
-  const filterName = req.query.filter ?? "all";
+
+  let filterName = "all";
+  if (!req.user || req.user.role === "user") {
+    filterName = "published";
+  }
 
   pagesDao
     .getPagesHead(filterName)
     .then((pages) => {
+      if (req.user && req.user.role === "editor") {
+        const isDraft = (p) =>
+          !p.publised_at && dayjs(p.published_at).isAfter(dayjs());
+        pages = pages.filter((p) => p.author !== req.user.id && isDraft(p));
+      }
       res.json(pages);
     })
     .catch((err) => {
@@ -47,12 +48,10 @@ router.get("/", function (req, res) {
 /**
  * Create a new page
  */
-router.post(
-  "/",
-  /*isEditor,*/ function (req, res) {
-    // #swagger.tags = ['Pages']
-    // #swagger.description = 'Endpoint to create a new page'
-    /*
+router.post("/", isEditor, function (req, res) {
+  // #swagger.tags = ['Pages']
+  // #swagger.description = 'Endpoint to create a new page'
+  /*
     #swagger.parameters['page'] = {
         in: 'body',
         description: 'Page object to add',
@@ -72,25 +71,23 @@ router.post(
         schema: { $ref: '#/definitions/Error' }
     }
     */
-    const page = req.body;
-    if (!BYPASS_AUTH) {
-      const userId = req.user.id;
-      if (req.user.role === "editor") {
-        page.author = userId;
-      }
-    }
-    pagesDao
-      .createPage(page, page.blocks)
-      .then((page) => {
-        res.json(page);
-      })
-      .catch((err) => {
-        handleError(err, res, "Error adding page to database");
-      });
+  const page = req.body;
+  if (!BYPASS_AUTH) {
+    const userId = parseInt(req.user.id);
+    // TODO: Maybe it's better to throw Bad Request if they don't match
+    page.author = userId;
   }
-);
+  pagesDao
+    .createPage(page, page.blocks)
+    .then((page) => {
+      res.json(page);
+    })
+    .catch((err) => {
+      handleError(err, res, "Error adding page to database");
+    });
+});
 
-router.get("/:id", function (req, res) {
+router.get("/:id", [check("id").isInt()], async function (req, res) {
   // #swagger.tags = ['Pages']
   // #swagger.description = 'Endpoint to get a page by id'
   /*
@@ -109,15 +106,31 @@ router.get("/:id", function (req, res) {
         schema: { $ref: '#/definitions/Error' }
     }
     */
-  const id = req.params.id;
-  pagesDao
-    .getPageById(id)
-    .then((page) => {
-      res.json(page);
-    })
-    .catch((err) => {
-      handleError(err, res, "Error retrieving page from database");
-    });
+  const id = parseInt(req.params.id);
+  try {
+    const page = await pagesDao.getPageById(id);
+    const now = dayjs();
+    const isPublished = dayjs(page.published_at).isBefore(now);
+    if (!isPublished) {
+      if (!req.user) {
+        res.status(403).json({
+          error: "You can't see this page",
+          details: "This is still a draft to be published",
+        });
+        return;
+      }
+      if (req.user.role !== "admin" && page.author !== req.user.id) {
+        res.status(403).json({
+          error: "You can't see this page",
+          details: "This draft belongs to someone else",
+        });
+        return;
+      }
+    }
+    res.json(page);
+  } catch (err) {
+    return handleError(err, res, "Error retrieving page from database");
+  }
 });
 
 router.put("/:id", isRole(["editor", "admin"]), async (req, res) => {
@@ -190,126 +203,30 @@ router.delete("/:id", isRole(["editor", "admin"]), async (req, res) => {
 });
 
 router.put(
-  "/:id/block/:blockId",
-  isRole(["editor", "admin"]),
-  async (req, res) => {
-    // #swagger.tags = ['Pages']
-    // #swagger.description = 'Endpoint to update a block by id'
-    const id = req.params.id;
-    const blockId = req.params.blockId;
-    const block = req.body;
-    const page = await pagesDao.getPageById(id);
-    if (!BYPASS_AUTH) {
-      if (req.user.role === "editor" && page.author !== req.user.id) {
-        res.status(403).json({ error: "You can't edit this block" });
-        return;
-      }
-    }
-    pagesDao
-      .updateBlock(id, blockId, block)
-      .then((block) => {
-        res.json(block);
-      })
-      .catch((err) => {
-        handleError(err, res, "Error updating block");
-      });
-  }
-);
-
-router.delete(
-  "/:id/block/:blockId",
-  isRole(["editor", "admin"]),
-  [check("id").isInt(), check("blockId").isInt()],
-  async (req, res) => {
-    // #swagger.tags = ['Pages']
-    // #swagger.description = 'Endpoint to delete a block by id'
-    const id = parseInt(req.params.id);
-    const blockId = parseInt(req.params.blockId);
-    const page = await pagesDao.getPageById(id);
-    if (!BYPASS_AUTH) {
-      if (req.user.role === "editor" && page.author !== req.user.id) {
-        res.status(403).json({ error: "You can't delete this block" });
-        return;
-      }
-    }
-    pagesDao
-      .deleteBlock(id, blockId)
-      .then(() => {
-        res.status(200).end();
-      })
-      .catch((err) => {
-        handleError(err, res, "Error deleting block");
-      });
-  }
-);
-
-router.post(
-  "/:id/block",
+  "/:id/blocks",
   isRole(["editor", "admin"]),
   [check("id").isInt()],
   async (req, res) => {
     // #swagger.tags = ['Pages']
-    // #swagger.description = 'Endpoint to add a block to a page'
-    /*
-    #swagger.parameters['id'] = {
-        in: 'path',
-        description: 'Page id',
-        required: true,
-        type: 'integer'
-    },
-    #swagger.parameters['block'] = {
-        in: 'body',
-        description: 'Block object to add',
-        required: true,
-        schema: { $ref: '#/definitions/Block' }
-    },
-    */
-
-    const id = req.params.id;
-    const block = req.body;
+    // #swagger.description = 'Endpoint to update all blocks of a page, removing the previous ones'
+    const id = parseInt(req.params.id);
+    const blocks = req.body;
     const page = await pagesDao.getPageById(id);
     if (!BYPASS_AUTH) {
       if (req.user.role === "editor" && page.author !== req.user.id) {
-        res.status(403).json({ error: "You can't add a block to this page" });
+        res.status(403).json({ error: "You can't edit this page" });
         return;
       }
     }
     pagesDao
-      .appendBlock(id, block)
-      .then((block) => {
-        res.json(block);
+      .updateBlocks(id, blocks)
+      .then((blocks) => {
+        res.json(blocks);
       })
       .catch((err) => {
-        console.log(err);
-        const code = err.code ?? 500;
-        if (err.code) {
-          delete err.code;
-        }
-        res.status(code).json({ error: "Error adding block", details: err });
+        handleError(err, res, "Error updating blocks");
       });
   }
 );
-
-router.put("/:id/blocks", isRole(["editor", "admin"]), async (req, res) => {
-  // #swagger.tags = ['Pages']
-  // #swagger.description = 'Endpoint to update all blocks of a page, removing the previous ones'
-  const id = req.params.id;
-  const blocks = req.body;
-  const page = await pagesDao.getPageById(id);
-  if (!BYPASS_AUTH) {
-    if (req.user.role === "editor" && page.author !== req.user.id) {
-      res.status(403).json({ error: "You can't edit this page" });
-      return;
-    }
-  }
-  pagesDao
-    .updateBlocks(id, blocks)
-    .then((blocks) => {
-      res.json(blocks);
-    })
-    .catch((err) => {
-      handleError(err, res, "Error updating blocks");
-    });
-});
 
 module.exports = router;
