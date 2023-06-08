@@ -4,6 +4,7 @@ const express = require("express");
 const router = express.Router();
 const { isAdmin } = require("../middlewares");
 
+const { getUsers } = require("../db/user-dao");
 const { getSiteName, setSiteName } = require("../db/site-dao");
 
 router.get("/name", function (req, res) {
@@ -51,6 +52,27 @@ router.put("/name", isAdmin, function (req, res) {
       res.status(200).end();
     })
     .catch((err) => {
+      res.status(500).json(err);
+    });
+});
+
+router.get("/editors", isAdmin, function (req, res) {
+  // #swagger.tags = ['Meta']
+  // #swagger.description = 'Endpoint to get all editors'
+  /*  #swagger.responses[200] = {
+                    description: 'Users successfully retrieved',
+                    schema: { 
+                        $id: 1,
+                        $name: 'John Doe',
+                     }
+                }
+            */
+  getUsers()
+    .then((users) => {
+      res.json(users);
+    })
+    .catch((err) => {
+      console.log(err);
       res.status(500).json(err);
     });
 });

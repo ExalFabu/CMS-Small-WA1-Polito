@@ -44,7 +44,25 @@ export const setSiteName = (name) => {
   });
 };
 
+export const getEditors = () => {
+  return new Promise((resolve, reject) => {
+    const url = `${URL}/meta/editors`;
+    fetch(url, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((res) => {
+        res
+          .json()
+          .then((data) => resolve(data))
+          .catch((err) => reject(err));
+      })
+      .catch((err) => reject(err));
+  });
+};
+
 export default {
     getSiteName,
-    setSiteName
+    setSiteName,
+    getEditors
 }

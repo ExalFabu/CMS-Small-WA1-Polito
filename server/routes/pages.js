@@ -35,9 +35,8 @@ router.get("/", function (req, res) {
     .getPagesHead(filterName)
     .then((pages) => {
       if (req.user && req.user.role === "editor") {
-        const isDraft = (p) =>
-          !p.publised_at && dayjs(p.published_at).isAfter(dayjs());
-        pages = pages.filter((p) => p.author !== req.user.id && isDraft(p));
+        const isPublished = (p) => dayjs(p.published_at).isBefore(dayjs());
+        pages = pages.filter((p) => isPublished(p) || (p.author === req.user.id));
       }
       res.json(pages);
     })

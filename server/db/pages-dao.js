@@ -62,7 +62,7 @@ const pageBlocksCount = (blocks) => {
  */
 const getPageById = (id) => {
   return new Promise((resolve, reject) => {
-    const sql = "SELECT p.*, u.name as author_name FROM pages p, users u WHERE p.id = ?";
+    const sql = "SELECT p.*, u.name as author_name FROM pages p, users u WHERE p.id = ? AND u.id = p.author";
     db.get(sql, [id], (err, row) => {
       if (err) {
         reject(err);
@@ -80,6 +80,7 @@ const getPageById = (id) => {
           author: row.author,
           published_at: row.published_at,
           created_at: row.created_at,
+          author_name: row.author_name,
         };
         getBlocks(page.id)
           .then((blocks) => {

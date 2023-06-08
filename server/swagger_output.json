@@ -99,6 +99,43 @@
         }
       }
     },
+    "/meta/editors": {
+      "get": {
+        "tags": [
+          "Meta"
+        ],
+        "description": "Endpoint to get all editors",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Users successfully retrieved",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number",
+                  "example": 1
+                },
+                "name": {
+                  "type": "string",
+                  "example": "John Doe"
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ],
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/auth/login": {
       "post": {
         "tags": [
@@ -218,22 +255,7 @@
           "Pages"
         ],
         "description": "Endpoint to get all pages",
-        "parameters": [
-          {
-            "name": "filter",
-            "in": "query",
-            "description": "Filter to apply to the pages list",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "all",
-                "published",
-                "drafts",
-                "scheduled"
-              ]
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "List of PageHead objects",
@@ -305,6 +327,9 @@
               "$ref": "#/definitions/Page"
             }
           },
+          "403": {
+            "description": "Forbidden"
+          },
           "500": {
             "description": "Error retrieving page from database",
             "schema": {
@@ -368,98 +393,6 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/pages/{id}/block/{blockId}": {
-      "put": {
-        "tags": [
-          "Pages"
-        ],
-        "description": "Endpoint to update a block by id",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "blockId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Pages"
-        ],
-        "description": "Endpoint to delete a block by id",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "blockId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/pages/{id}/block": {
-      "post": {
-        "tags": [
-          "Pages"
-        ],
-        "description": "Endpoint to add a block to a page",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "integer",
-            "description": "Page id"
-          },
-          {
-            "name": "block",
-            "in": "body",
-            "description": "Block object to add",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/Block"
-            }
           }
         ],
         "responses": {

@@ -17,13 +17,23 @@ import {
   Stack,
 } from "react-bootstrap";
 import { useLoaderData } from "react-router-dom";
+import { getEditors } from "../api/meta";
 
-const EditModePageMetadata = ({isAdmin, saveEditedPage, cancelEdit }) => {
+const EditModePageMetadata = ({ isAdmin, saveEditedPage, cancelEdit }) => {
   const page = useLoaderData();
   const [editedPage, setEditedPage] = useState(page);
   useEffect(() => {
     setEditedPage(page);
   }, [page]);
+  const [editors, setEditors] = useState([]);
+  useEffect(() => {
+    if (isAdmin) {
+      getEditors().then((res) => {
+        setEditors(res);
+      });
+    }
+  }, [isAdmin]);
+
   const [pageHasChanged, setPageHasChanged] = useState(false);
 
   const save = () => {
@@ -35,15 +45,22 @@ const EditModePageMetadata = ({isAdmin, saveEditedPage, cancelEdit }) => {
       <Row className="align-content-center align-items-center">
         <Col>
           <FloatingLabel label="Autore">
-            <Form.Control
+            <Form.Select
               type="text"
               value={editedPage.author}
+              defaultValue={editedPage.author}
               disabled={!isAdmin}
               onChange={(e) => {
                 setEditedPage({ ...editedPage, author: e.target.value });
                 setPageHasChanged(true);
               }}
-            />
+            >
+              {editors.map((editor) => (
+                <option key={editor.id} value={editor.name}>
+                  {editor.name}
+                </option>
+              ))}
+            </Form.Select>
           </FloatingLabel>
         </Col>
         <Col>
@@ -59,8 +76,9 @@ const EditModePageMetadata = ({isAdmin, saveEditedPage, cancelEdit }) => {
           </FloatingLabel>
         </Col>
         <Col>
-          <FloatingLabel label="Data di Pubblicazione" 
-          disabled={editedPage.published_at === null}
+          <FloatingLabel
+            label="Data di Pubblicazione"
+            disabled={editedPage.published_at === null}
           >
             <Form.Control
               type="date"
@@ -74,23 +92,22 @@ const EditModePageMetadata = ({isAdmin, saveEditedPage, cancelEdit }) => {
                 setPageHasChanged(true);
               }}
               disabled={editedPage.published_at === null}
-              
             />
           </FloatingLabel>
         </Col>
         <Col xs="1">
-            <Form.Check
-              checked={editedPage.published_at === null}
-              onChange={(e) => {
-                setEditedPage({
-                  ...editedPage,
-                  published_at: e.target.checked ? null : dayjs().toISOString(),
-                });
-                setPageHasChanged(true);
-              }}
-              aria-label="Draft"
-              label="Draft"
-            />
+          <Form.Check
+            checked={editedPage.published_at === null}
+            onChange={(e) => {
+              setEditedPage({
+                ...editedPage,
+                published_at: e.target.checked ? null : dayjs().toISOString(),
+              });
+              setPageHasChanged(true);
+            }}
+            aria-label="Draft"
+            label="Draft"
+          />
         </Col>
         <Col xs="1">
           <Stack gap={2}>
