@@ -104,6 +104,31 @@ export const updatePageBlocks = (id, blocks) => {
 }
 
 
+export const createPage = (page) => {
+    return new Promise((resolve, reject) => {
+        fetch(`${URL}/pages`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(page)
+        })
+        .then((res) => {
+            res.json().then((page) => {
+                resolve(page);
+                return
+            }).catch((err) => {
+                reject(err)
+                return;
+            })
+        })
+        .catch((err) => {
+            reject(err);
+            return;
+        })
+    })
+}
 
 
 export default {

@@ -16,6 +16,16 @@ import Page from "./routes/Page";
 
 function App() {
   const [user, setUser] = useState(null);
+  // const newPageCreator = useMemo(() => {
+  //   return new Promise((resolve, reject) => {
+  //     resolve({
+  //       title: "Nuova Pagina",
+  //       author: user.id,
+  //       blocks: [],
+  //       author_name: user.name,
+  //     });
+  //   });
+  // }, [user]);
   const router = createBrowserRouter(
     createRoutesFromElements(
       <>
@@ -25,7 +35,8 @@ function App() {
         >
           <Route exact path="" loader={pages.getPages} element={<Home user={user} />} />
           <Route exact path="login" element={<LoginForm login={setUser} />} />
-          <Route path="page/:id" loader={({params}) => pages.getPage(params.id)} element={<Page user={user} />} />
+          <Route path="page/:id" loader={({ params }) => pages.getPage(params.id)} element={<Page user={user} />} />
+          <Route shouldRevalidate={() => false} exact path="page/new" loader={() => ({ title: "Nuova Pagina", author: user.id, blocks: [], author_name: user.name, published_at: null })} element={<Page user={user} isNew={true} />} />
         </Route>
       </>
     )

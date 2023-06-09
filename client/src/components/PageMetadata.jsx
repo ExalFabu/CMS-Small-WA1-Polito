@@ -19,8 +19,7 @@ import {
 import { useLoaderData } from "react-router-dom";
 import { getEditors } from "../api/meta";
 
-const EditModePageMetadata = ({ isAdmin, saveEditedPage, cancelEdit }) => {
-  const page = useLoaderData();
+const EditModePageMetadata = ({ page, isAdmin, saveEditedPageMetadata, cancelEdit }) => {
   const [editedPage, setEditedPage] = useState(page);
   useEffect(() => {
     setEditedPage(page);
@@ -32,12 +31,15 @@ const EditModePageMetadata = ({ isAdmin, saveEditedPage, cancelEdit }) => {
         setEditors(res);
       });
     }
+    else {
+      setEditors([{ name: page.author_name, id: page.author }]);
+    }
   }, [isAdmin]);
 
   const [pageHasChanged, setPageHasChanged] = useState(false);
 
   const save = () => {
-    saveEditedPage(editedPage);
+    saveEditedPageMetadata(editedPage);
   };
 
   return (
@@ -48,7 +50,6 @@ const EditModePageMetadata = ({ isAdmin, saveEditedPage, cancelEdit }) => {
             <Form.Select
               type="text"
               value={editedPage.author}
-              defaultValue={editedPage.author}
               disabled={!isAdmin}
               onChange={(e) => {
                 setEditedPage({ ...editedPage, author: e.target.value });
@@ -130,8 +131,7 @@ const EditModePageMetadata = ({ isAdmin, saveEditedPage, cancelEdit }) => {
   );
 };
 
-const ViewModePageMetadata = ({ setEditMode, editable }) => {
-  const page = useLoaderData();
+const ViewModePageMetadata = ({ page, setEditMode, editable }) => {
   const pageState = !dayjs(page.published_at).isValid()
     ? "Draft"
     : dayjs(page.published_at).format("DD/MM/YYYY");
@@ -139,7 +139,7 @@ const ViewModePageMetadata = ({ setEditMode, editable }) => {
     <Container className="">
       <Row className="text-center align-items-center d-flex justify-content-around">
         <Col className="text-muted">
-          Autore: <span>{page.author}</span>
+          Autore: <span>{page.author_name}</span>
         </Col>
         <Col>
           <h1>{page.title}</h1>
@@ -159,25 +159,27 @@ const ViewModePageMetadata = ({ setEditMode, editable }) => {
   );
 };
 
-const PageMetadata = ({ editable, isAdmin, saveEditedPage }) => {
+const PageMetadata = ({ page, editable, isAdmin, saveEditedPageMetadata }) => {
   const [editMode, setEditMode] = useState(false);
 
-  const save = (editedPage) => {
-    saveEditedPage(editedPage);
+  const saveWrapper = (editedPage) => {
+    saveEditedPageMetadata(editedPage);
     setEditMode(false);
   };
 
   if (editMode) {
     return (
       <EditModePageMetadata
+        page={page}
         isAdmin={isAdmin}
-        saveEditedPage={save}
+        saveEditedPageMetadata={saveWrapper}
         cancelEdit={() => setEditMode(false)}
       />
     );
   } else {
     return (
       <ViewModePageMetadata
+      page={page}
         editable={editable}
         setEditMode={() => setEditMode(true)}
       />

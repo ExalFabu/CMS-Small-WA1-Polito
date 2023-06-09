@@ -2,24 +2,24 @@ import React, { useEffect, useState } from "react";
 import { Button, Container, Navbar } from "react-bootstrap";
 import { useLoaderData, useNavigate, useRevalidator } from "react-router-dom";
 import Block from "../components/Block";
-import { updatePageBlocks, updatePageMetadata } from "../api/pages";
+import { createPage, updatePageBlocks, updatePageMetadata } from "../api/pages";
 import PageMetadata from "../components/PageMetadata";
 
-const Page = ({ user }) => {
+const Page = ({ user, isNew = false }) => {
   const { revalidate } = useRevalidator();
+  const navigate = useNavigate()
   const page = useLoaderData();
+  const [editedPage, setEditedPage] = useState(page);
   const [editedBlocks, setEditedBlocks] = useState(page.blocks);
-  const [blocksHaveBeenEdited, setBlocksHaveBeenEdited] = useState(false);
+  const [pageHasBeenEdited, setPageHasBeenEdited] = useState(false);
+  useEffect(() => {
+    setEditedPage(page);
+    setEditedBlocks(page.blocks)
+  }, [page])
 
-  const saveEditedPageMetadata = (editedPage) => {
-    updatePageMetadata(page.id, { ...page, ...editedPage })
-      .then((res) => {
-        console.log(res);
-        revalidate(); // To trigger a reload of the data
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+  const saveEditedPageMetadata = (editedPageMetadata) => {
+    setEditedPage({ ...editedPage, ...editedPageMetadata });
+    setPageHasBeenEdited(true);
   };
 
   const setEditedBlock = (block, toDelete = false) => {
@@ -33,37 +33,53 @@ const Page = ({ user }) => {
           blocks.length + 1
         );
         blocks.splice(clampedPosition - 1, 0, block);
-        blocks.forEach((it, idx) => {
-          it.order = idx + 1; // To make sure that the order is correct and there are no duplicates
-        });
       }
-      setBlocksHaveBeenEdited(true);
+      blocks.forEach((it, idx) => {
+        it.order = idx + 1; // To make sure that the order is correct and there are no duplicates
+      });
+      setPageHasBeenEdited(true);
       return blocks;
     });
   };
 
   const editable = user && (user.role === "admin" || user.id === page.author);
 
-  const saveEditedBlocks = () => {
-    updatePageBlocks(page.id, editedBlocks)
-      .then((res) => {
-        console.log(res);
-        setBlocksHaveBeenEdited(false);
-        navigator(); // To trigger a reload of the data
+  const saveEditedPage = () => {
+    const finalPage = {...editedPage}
+    finalPage.blocks = [...editedBlocks]
+    if (!isNew) {
+      updatePageBlocks(page.id, editedBlocks)
+        .then((res) => {
+          console.log(res);
+          setPageHasBeenEdited(false);
+          revalidate(); // To trigger a reload of the data
+        })
+        .catch((err) => {
+          console.log(err);
+          // TODO: Toast error
+        });
+    }
+    else {
+      // Create new page and redirect to it
+      createPage(finalPage).then(
+        (page) => {
+          navigate(`/page/${page.id}`);
+        }
+      ).catch((err) => {
+        console.error(err)
+        // TODO: Handle error
       })
-      .catch((err) => {
-        console.log(err);
-        // TODO: Toast error
-      });
+      console.log(finalPage)
+    }
   };
-  console.log(page);
   return (
     <div className="w-75 mx-auto">
       <div>
         <PageMetadata
+          page={editedPage}
           editable={editable}
           isAdmin={user && user.role === "admin"}
-          saveEditedPage={saveEditedPageMetadata}
+          saveEditedPageMetadata={saveEditedPageMetadata}
         />
       </div>
       {editedBlocks.map((block) => (
@@ -83,6 +99,7 @@ const Page = ({ user }) => {
                 type: "paragraph",
                 content: "Empty Paragraph",
                 page: page.id,
+                id: editedBlocks.length + 1,
               })
             }
             variant="primary"
@@ -95,16 +112,15 @@ const Page = ({ user }) => {
         <></>
       )}
       <Navbar fixed="bottom">
-        <Container className="text-muted">Autore: {page.author_name}</Container>
         {editable ? (
           <Container>
             <Button
-              disabled={!blocksHaveBeenEdited}
-              onClick={saveEditedBlocks}
+              disabled={!pageHasBeenEdited}
+              onClick={saveEditedPage}
               variant="primary"
               className="mx-auto"
             >
-              Salva Modifiche
+              {isNew ? "Crea Pagina" : "Salva Modifiche"}
             </Button>
           </Container>
         ) : (
