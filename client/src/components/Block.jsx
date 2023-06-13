@@ -108,7 +108,7 @@ const Block = ({ block, editable, setBlock }) => {
     <Container className="my-3">
       <Row className="align-items-center">
         <Col>
-          {isEditing ? (
+          {editable && isEditing ? (
             <EditableBlock block={localBlock} setBlock={setLocalBlock} />
           ) : (
             <ViewBlock block={localBlock} />

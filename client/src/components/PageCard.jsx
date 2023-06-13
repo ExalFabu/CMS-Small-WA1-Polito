@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Button, Card, Stack } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -14,11 +14,9 @@ export const PubishedLabel = ({date}) => {
   return <span className="text-muted">{publishedDate.format("DD/MM/YYYY")}</span>;
 }
 
-const PageCard = ({ page, user }) => {
+const PageCard = ({ page, user, forcedFrontOffice }) => {
   const { revalidate } = useRevalidator();
-  const isDeletable =
-    user && (user.role === "admin" || user.id === page.author);
-
+  const isDeletable = useMemo(() => (user && (user.role === "admin" || user.id === page.author) && !forcedFrontOffice), [user, forcedFrontOffice])
 
   const navigate = useNavigate();
 

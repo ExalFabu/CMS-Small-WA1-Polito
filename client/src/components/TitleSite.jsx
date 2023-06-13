@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Button,
   Col,
@@ -17,7 +17,7 @@ import {
 import api from "../api/meta";
 import { useLoaderData, useSubmit } from "react-router-dom";
 
-const TitleSite = ({ user }) => {
+const TitleSite = ({ user, forcedFrontOffice }) => {
   const [siteName, setSiteName] = useState("");
   useEffect(() => {
     api.getSiteName().then((siteName) => setSiteName(siteName));
@@ -26,7 +26,7 @@ const TitleSite = ({ user }) => {
     document.title = siteName;
     setNewSiteName(siteName);
   }, [siteName]);
-  const isEditable = user && user.role === "admin";
+  const isEditable = useMemo(() => (user && user.role === "admin" && !forcedFrontOffice), [user, forcedFrontOffice]);
   const [editing, setEditing] = React.useState(false);
   const [newSiteName, setNewSiteName] = React.useState(siteName);
 

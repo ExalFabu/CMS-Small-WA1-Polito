@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { Button, Container, Navbar } from "react-bootstrap";
+import React, { useEffect, useMemo, useState } from "react";
+import { Button, Container, Form, Navbar } from "react-bootstrap";
 import { useLoaderData, useNavigate, useRevalidator } from "react-router-dom";
 import Block from "../components/Block";
 import { createPage, updatePage } from "../api/pages";
 import PageMetadata from "../components/PageMetadata";
 import ErrorHandler from "../components/ErrorHandler";
 
-const Page = ({ user, isNew = false }) => {
+const Page = ({ user, isNew = false, forcedFrontOffice }) => {
   const { revalidate } = useRevalidator();
   const navigate = useNavigate()
   const page = useLoaderData();
@@ -45,7 +45,7 @@ const Page = ({ user, isNew = false }) => {
     });
   };
 
-  const editable = user && (user.role === "admin" || user.id === page.author);
+  const editable = useMemo(() => (user && (user.role === "admin" || user.id === page.author) && !forcedFrontOffice), [user, page.author, forcedFrontOffice]);
 
   const saveEditedPage = () => {
     const finalPage = { ...editedPage }

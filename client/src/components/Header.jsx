@@ -1,35 +1,31 @@
-import React from "react";
-import { Navbar } from "react-bootstrap";
+import React, { useEffect, useMemo } from "react";
+import { Button, ButtonGroup, Form, Navbar, Stack, ToggleButton } from "react-bootstrap";
 import { Link, Outlet, useNavigate, useRevalidator } from "react-router-dom";
 import TitleSite from "./TitleSite";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowRightToBracket,
-    faArrowRightFromBracket,
-    faArrowsRotate,
-    faArrowLeft,
-    faHouseChimney,
+  faArrowRightFromBracket,
+  faArrowsRotate,
+  faArrowLeft,
+  faHouseChimney,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { logout } from "../api/auth";
 
-const Header = ({ user, logout: stateLogout }) => {
+const Header = ({ user, logout: stateLogout, forcedFrontOffice, setFFO }) => {
   const doLogout = () => {
     logout().then(() => stateLogout());
   };
-  const {revalidate} = useRevalidator();
+  const { revalidate } = useRevalidator();
   const navigator = useNavigate();
-  const goHome = () => { 
-    navigator("/");
-  }
+  const goHome = () => navigator("/");
+  const goBack = () => navigator(-1);
+  const reload = () => revalidate();
 
-  const goBack = () => {
-    navigator(-1);
-  }
+  const enabledBackOffice = useMemo(() => (user && (user.role === "admin" || user.role === "editor")), [user]);
 
-  const reload = () => {
-    revalidate();
-  };
+
   return (
     <>
       <Navbar
@@ -43,9 +39,28 @@ const Header = ({ user, logout: stateLogout }) => {
           <FontAwesomeIcon cursor={"pointer"} className="m-2" icon={faHouseChimney} onClick={goHome} />
           <FontAwesomeIcon cursor={"pointer"} className="m-2" icon={faArrowsRotate} onClick={reload} />
         </Navbar.Brand>
+        {enabledBackOffice && <ButtonGroup>
+          <Button
+            size="sm"
+            variant="outline-primary"
+            active={forcedFrontOffice}
+            onClick={() => setFFO(true)}
+          >
+            Front Office
+          </Button>
+          <Button
+            size="sm"
+            variant="outline-primary"
+            active={!forcedFrontOffice}
+            onClick={() => setFFO(false)}
+          >
+            Back Office
+          </Button>
+          </ButtonGroup>
+          }
 
 
-        <TitleSite user={user} />
+        <TitleSite user={user} forcedFrontOffice={forcedFrontOffice} />
         <Navbar.Brand className="me-0">
           {user ? <span className="me-2"> Ciao {user.name}! </span> : <></>}
           {user ? (
