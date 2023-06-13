@@ -1,5 +1,5 @@
-import React, {useState} from "react";
-import { Container, Row, Col, Button, Form, Stack } from "react-bootstrap";
+import React, { useEffect, useState } from "react";
+import { Container, Row, Col, Button, Form, Stack, Image } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPenToSquare,
@@ -7,6 +7,8 @@ import {
   faCancel,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
+import { getImages } from "../api/meta";
+import { URL_IMAGES } from "../api";
 
 const HeaderBlock = ({ block }) => {
   return <h2>{block.content}</h2>;
@@ -17,7 +19,7 @@ const ParagraphBlock = ({ block }) => {
 };
 
 const ImageBlock = ({ block }) => {
-  return <p>Image with src: {block.content}</p>;
+  return <Image src={`${URL_IMAGES}/${block.content}`} rounded fluid/>;
 };
 
 const ViewBlock = ({ block }) => {
@@ -34,12 +36,10 @@ const ViewBlock = ({ block }) => {
 };
 
 const EditableBlock = ({ block, setBlock }) => {
-  const selectableImages = [
-    "https://picsum.photos/200/300",
-    "https://picsum.photos/300/400",
-    "https://picsum.photos/400/500",
-    "https://picsum.photos/500/600",
-  ];
+  const [selectableImages, setSelectableImages] = useState([]);
+  useEffect(() => {
+    getImages().then((images) => setSelectableImages(images));
+  }, []);
   return (
     <Form className="my-2" >
       <Form.Group>
@@ -48,19 +48,19 @@ const EditableBlock = ({ block, setBlock }) => {
           value={block.type}
           onChange={(ev) => setBlock({ ...block, type: ev.target.value })}
         >
-            <option value="header">Header</option>
-            <option value="paragraph">Paragraph</option>
-            <option value="image">Image</option>
+          <option value="header">Header</option>
+          <option value="paragraph">Paragraph</option>
+          <option value="image">Image</option>
         </Form.Select>
       </Form.Group>
       <Form.Group>
         <Form.Label>Contenuto</Form.Label>
         {block.type === "image" ? (
-          <Form.Select value={block.content} onChange={(ev) => setBlock({...block, content: ev.target.value})}> 
-            {selectableImages.map((image, idx) => (
-                <option key={idx} value={image}>
-                    {image}
-                </option>
+          <Form.Select value={block.content} onChange={(ev) => setBlock({ ...block, content: ev.target.value })}>
+            {selectableImages.map((image) => (
+              <option key={image.path} value={image.path}>
+                {image.name}
+              </option>
             ))}
           </Form.Select>
         ) : (

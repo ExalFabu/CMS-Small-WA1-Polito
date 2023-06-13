@@ -1,6 +1,6 @@
 "use strict";
 
-import { URL } from "./index";
+import { URL, URL_IMAGES } from "./index";
 
 export const getSiteName = () => {
   return new Promise((resolve, reject) => {
@@ -61,8 +61,26 @@ export const getEditors = () => {
   });
 };
 
+export const getImages = () => {
+  return new Promise((resolve, reject) => {
+    const url = `${URL}/meta/images`;
+    fetch(url, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((res) => {
+        res
+          .json()
+          .then((data) => resolve(data))
+          .catch((err) => reject(err));
+      })
+      .catch((err) => reject(err));
+  });
+}
+
 export default {
     getSiteName,
     setSiteName,
-    getEditors
+    getEditors,
+    getImages
 }
