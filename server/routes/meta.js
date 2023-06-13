@@ -77,4 +77,34 @@ router.get("/editors", isAdmin, function (req, res) {
     });
 });
 
+router.get("/images", function (req, res) {
+  // #swagger.tags = ['Site']
+  // #swagger.description = 'Endpoint to get all images'
+  /*  #swagger.responses[200] = {
+                    description: 'Images successfully retrieved',
+                    schema: { 
+                        $name: 'image.png',
+                        $path: 'images/image.png'
+                     }
+                }
+            */
+  const fs = require("fs");
+  const path = require("path");
+  const dir = path.join(__dirname, "../public/images");
+  fs.readdir(dir, (err, files) => {
+    if (err) {
+      console.log(err);
+      res.status(500).json(err);
+    } else {
+      const images = files.map((file) => {
+        return {
+          name: file,
+          path: `images/${file}`,
+        };
+      });
+      res.json(images);
+    }
+  });
+})
+
 module.exports = router;

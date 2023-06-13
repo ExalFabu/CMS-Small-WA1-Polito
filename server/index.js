@@ -14,6 +14,7 @@ const swaggerFile = require("./swagger_output.json");
 const app = express();
 app.use(morgan("dev"));
 app.use(express.json());
+app.use("/static", express.static('public')); // Images are in /static/images/filename
 
 /** Set up and enable Cross-Origin Resource Sharing (CORS) **/
 const corsOptions = {

@@ -136,6 +136,43 @@
         }
       }
     },
+    "/meta/images": {
+      "get": {
+        "tags": [
+          "Site"
+        ],
+        "description": "Endpoint to get all images",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Images successfully retrieved",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "image.png"
+                },
+                "path": {
+                  "type": "string",
+                  "example": "images/image.png"
+                }
+              },
+              "required": [
+                "name",
+                "path"
+              ],
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/auth/login": {
       "post": {
         "tags": [
