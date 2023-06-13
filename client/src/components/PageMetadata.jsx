@@ -18,8 +18,9 @@ import {
 } from "react-bootstrap";
 import { useLoaderData } from "react-router-dom";
 import { getEditors } from "../api/meta";
+import { PubishedLabel } from "./PageCard";
 
-const EditModePageMetadata = ({ page, isAdmin,user, saveEditedPageMetadata, cancelEdit }) => {
+const EditModePageMetadata = ({ page, isAdmin, user, saveEditedPageMetadata, cancelEdit }) => {
   const [editedPage, setEditedPage] = useState(page);
   useEffect(() => {
     setEditedPage(page);
@@ -139,9 +140,7 @@ const EditModePageMetadata = ({ page, isAdmin,user, saveEditedPageMetadata, canc
 };
 
 const ViewModePageMetadata = ({ page, setEditMode, editable }) => {
-  const pageState = !dayjs(page.published_at).isValid()
-    ? "Draft"
-    : dayjs(page.published_at).format("DD/MM/YYYY");
+
   return (
     <Container className="">
       <Row className="text-center align-items-center d-flex justify-content-around">
@@ -151,7 +150,7 @@ const ViewModePageMetadata = ({ page, setEditMode, editable }) => {
         <Col>
           <h1>{page.title}</h1>
         </Col>
-        <Col className="text-muted">{pageState}</Col>
+        <Col><PubishedLabel date={page.published_at} /></Col>
         {editable ? (
           <Col xs="1">
             <Button size="sm" variant="outline-primary" onClick={setEditMode}>
@@ -187,7 +186,7 @@ const PageMetadata = ({ page, editable, isAdmin, user, saveEditedPageMetadata })
   } else {
     return (
       <ViewModePageMetadata
-      page={page}
+        page={page}
         editable={editable}
         setEditMode={() => setEditMode(true)}
       />

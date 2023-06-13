@@ -7,6 +7,8 @@ import {
   faArrowRightToBracket,
     faArrowRightFromBracket,
     faArrowsRotate,
+    faArrowLeft,
+    faHouseChimney,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { logout } from "../api/auth";
@@ -16,6 +18,15 @@ const Header = ({ user, logout: stateLogout }) => {
     logout().then(() => stateLogout());
   };
   const {revalidate} = useRevalidator();
+  const navigator = useNavigate();
+  const goHome = () => { 
+    navigator("/");
+  }
+
+  const goBack = () => {
+    navigator(-1);
+  }
+
   const reload = () => {
     revalidate();
   };
@@ -28,7 +39,8 @@ const Header = ({ user, logout: stateLogout }) => {
         className="mb-4 px-4 justify-content-between"
       >
         <Navbar.Brand className="d-flex align-content-center gap-1">
-          <Link to="/">Home</Link>
+          <FontAwesomeIcon cursor={"pointer"} className="m-2" icon={faArrowLeft} onClick={goBack} />
+          <FontAwesomeIcon cursor={"pointer"} className="m-2" icon={faHouseChimney} onClick={goHome} />
           <FontAwesomeIcon cursor={"pointer"} className="m-2" icon={faArrowsRotate} onClick={reload} />
         </Navbar.Brand>
 
