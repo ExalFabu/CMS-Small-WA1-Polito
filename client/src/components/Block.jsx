@@ -5,6 +5,7 @@ import {
   faPenToSquare,
   faFloppyDisk,
   faCancel,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 
 const HeaderBlock = ({ block }) => {
@@ -99,6 +100,10 @@ const Block = ({ block, editable, setBlock }) => {
     setIsEditing(false);
   };
 
+  const deleteBlock = () => {
+    setBlock(block, true);
+  };
+
   return (
     <Container className="my-3">
       <Row className="align-items-center">
@@ -115,6 +120,14 @@ const Block = ({ block, editable, setBlock }) => {
               <Stack gap={2}>
                 <Button size="sm" variant="outline-success" onClick={saveBlock}>
                   <FontAwesomeIcon icon={faFloppyDisk} />
+                </Button>
+                <div className="hr border"></div>
+                <Button
+                  size="sm"
+                  variant="outline-danger"
+                  onClick={deleteBlock}
+                >
+                  <FontAwesomeIcon icon={faTrash} />
                 </Button>
                 <div className="hr border"></div>
                 <Button

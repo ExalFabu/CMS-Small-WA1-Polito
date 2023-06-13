@@ -34,10 +34,11 @@ router.get("/", function (req, res) {
   pagesDao
     .getPagesHead(filterName)
     .then((pages) => {
-      if (req.user && req.user.role === "editor") {
-        const isPublished = (p) => dayjs(p.published_at).isBefore(dayjs());
-        pages = pages.filter((p) => isPublished(p) || (p.author === req.user.id));
-      }
+      // Misunderstood requirement: editors can see drafts of other editors
+      // if (req.user && req.user.role === "editor") {
+      //   const isPublished = (p) => dayjs(p.published_at).isBefore(dayjs());
+      //   pages = pages.filter((p) => isPublished(p) || p.author === req.user.id);
+      // }
       res.json(pages);
     })
     .catch((err) => {
@@ -132,10 +133,14 @@ router.get("/:id", [check("id").isInt()], async function (req, res) {
   }
 });
 
-router.put("/:id", isRole(["editor", "admin"]), async (req, res) => {
-  // #swagger.tags = ['Pages']
-  // #swagger.description = 'Endpoint to update a page metadata by id'
-  /*
+router.put(
+  "/:id",
+  isRole(["editor", "admin"]),
+  [check("id").isInt()],
+  async (req, res) => {
+    // #swagger.tags = ['Pages']
+    // #swagger.description = 'Endpoint to update a page metadata by id'
+    /*
     #swagger.parameters['id'] = {
         in: 'path',
         description: 'Page id',
@@ -161,24 +166,31 @@ router.put("/:id", isRole(["editor", "admin"]), async (req, res) => {
         schema: { $ref: '#/definitions/Error' }
     }
     */
-  const id = req.params.id;
-  const page = req.body;
-  const oldPage = await pagesDao.getPageById(id);
-  if (!BYPASS_AUTH) {
-    if (req.user.role === "editor" && oldPage.author !== req.user.id) {
-      res.status(403).json({ error: "You can't edit this page" });
+    const id = parseInt(req.params.id);
+    const page = req.body;
+    try {
+      const oldPage = await pagesDao.getPageById(id);
+      if (!BYPASS_AUTH) {
+        if (req.user.role === "editor" && oldPage.author !== req.user.id) {
+          res.status(403).json({ error: "You can't edit this page" });
+          return;
+        }
+      }
+    } catch (err) {
+      return handleError(err, res, "Error retrieving page from database");
+    }
+    try {
+      const updatedPage = await pagesDao.updatePage(page);
+      // If update of metadata went well, update blocks
+      const blocks = page.blocks;
+      const updatedBlocks = await pagesDao.updateBlocks(id, blocks);
+      res.json({ ...updatedPage, blocks: updatedBlocks });
       return;
+    } catch (err) {
+      return handleError(err, res, "Error updating page");
     }
   }
-  pagesDao
-    .updatePage(page)
-    .then((page) => {
-      res.json(page);
-    })
-    .catch((err) => {
-      handleError(err, res, "Error updating page");
-    });
-});
+);
 
 router.delete("/:id", isRole(["editor", "admin"]), async (req, res) => {
   // #swagger.tags = ['Pages']
@@ -201,31 +213,31 @@ router.delete("/:id", isRole(["editor", "admin"]), async (req, res) => {
     });
 });
 
-router.put(
-  "/:id/blocks",
-  isRole(["editor", "admin"]),
-  [check("id").isInt()],
-  async (req, res) => {
-    // #swagger.tags = ['Pages']
-    // #swagger.description = 'Endpoint to update all blocks of a page, removing the previous ones'
-    const id = parseInt(req.params.id);
-    const blocks = req.body;
-    const page = await pagesDao.getPageById(id);
-    if (!BYPASS_AUTH) {
-      if (req.user.role === "editor" && page.author !== req.user.id) {
-        res.status(403).json({ error: "You can't edit this page" });
-        return;
-      }
-    }
-    pagesDao
-      .updateBlocks(id, blocks)
-      .then((blocks) => {
-        res.json(blocks);
-      })
-      .catch((err) => {
-        handleError(err, res, "Error updating blocks");
-      });
-  }
-);
+// router.put(
+//   "/:id/blocks",
+//   isRole(["editor", "admin"]),
+//   [check("id").isInt()],
+//   async (req, res) => {
+//     // #swagger.tags = ['Pages']
+//     // #swagger.description = 'Endpoint to update all blocks of a page, removing the previous ones'
+//     const id = parseInt(req.params.id);
+//     const blocks = req.body;
+//     const page = await pagesDao.getPageById(id);
+//     if (!BYPASS_AUTH) {
+//       if (req.user.role === "editor" && page.author !== req.user.id) {
+//         res.status(403).json({ error: "You can't edit this page" });
+//         return;
+//       }
+//     }
+//     pagesDao
+//       .updateBlocks(id, blocks)
+//       .then((blocks) => {
+//         res.json(blocks);
+//       })
+//       .catch((err) => {
+//         handleError(err, res, "Error updating blocks");
+//       });
+//   }
+// );
 
 module.exports = router;

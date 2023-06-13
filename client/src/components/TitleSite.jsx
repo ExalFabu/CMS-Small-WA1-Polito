@@ -36,7 +36,7 @@ const TitleSite = ({ user }) => {
 
   return (
     <Row className="align-items-center w-100 justify-content-center">
-      <Col style={{"max-width": "fit-content"}}>
+      <Col style={{"maxWidth": "fit-content"}}>
         {!editing ? (
           <h1 className="text-center">{siteName}</h1>
         ) : (

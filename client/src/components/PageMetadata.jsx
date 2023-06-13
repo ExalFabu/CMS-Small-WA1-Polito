@@ -5,7 +5,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Button,
   Col,
@@ -19,24 +19,31 @@ import {
 import { useLoaderData } from "react-router-dom";
 import { getEditors } from "../api/meta";
 
-const EditModePageMetadata = ({ page, isAdmin, saveEditedPageMetadata, cancelEdit }) => {
+const EditModePageMetadata = ({ page, isAdmin,user, saveEditedPageMetadata, cancelEdit }) => {
   const [editedPage, setEditedPage] = useState(page);
   useEffect(() => {
     setEditedPage(page);
   }, [page]);
   const [editors, setEditors] = useState([]);
   useEffect(() => {
+
     if (isAdmin) {
       getEditors().then((res) => {
-        setEditors(res);
+        setEditors([{ name: user.name, id: user.id }, ...res]);
       });
     }
     else {
       setEditors([{ name: page.author_name, id: page.author }]);
     }
-  }, [isAdmin]);
+  }, [isAdmin, page.author, page.author_name]);
 
   const [pageHasChanged, setPageHasChanged] = useState(false);
+
+  const changeEditor = (e) => {
+    const editor_id = e.target.value;
+    const editor_name = e.target.options[e.target.selectedIndex].label;
+    setEditedPage((currEditedPage) => ({ ...currEditedPage, author: editor_id, author_name: editor_name }));
+  }
 
   const save = () => {
     saveEditedPageMetadata(editedPage);
@@ -52,12 +59,12 @@ const EditModePageMetadata = ({ page, isAdmin, saveEditedPageMetadata, cancelEdi
               value={editedPage.author}
               disabled={!isAdmin}
               onChange={(e) => {
-                setEditedPage({ ...editedPage, author: e.target.value });
+                changeEditor(e);
                 setPageHasChanged(true);
               }}
             >
               {editors.map((editor) => (
-                <option key={editor.id} value={editor.name}>
+                <option key={editor.id} value={editor.id}>
                   {editor.name}
                 </option>
               ))}
@@ -159,7 +166,7 @@ const ViewModePageMetadata = ({ page, setEditMode, editable }) => {
   );
 };
 
-const PageMetadata = ({ page, editable, isAdmin, saveEditedPageMetadata }) => {
+const PageMetadata = ({ page, editable, isAdmin, user, saveEditedPageMetadata }) => {
   const [editMode, setEditMode] = useState(false);
 
   const saveWrapper = (editedPage) => {
@@ -172,6 +179,7 @@ const PageMetadata = ({ page, editable, isAdmin, saveEditedPageMetadata }) => {
       <EditModePageMetadata
         page={page}
         isAdmin={isAdmin}
+        user={user}
         saveEditedPageMetadata={saveWrapper}
         cancelEdit={() => setEditMode(false)}
       />

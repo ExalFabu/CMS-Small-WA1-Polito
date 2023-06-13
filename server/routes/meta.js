@@ -57,7 +57,7 @@ router.put("/name", isAdmin, function (req, res) {
 });
 
 router.get("/editors", isAdmin, function (req, res) {
-  // #swagger.tags = ['Meta']
+  // #swagger.tags = ['Site']
   // #swagger.description = 'Endpoint to get all editors'
   /*  #swagger.responses[200] = {
                     description: 'Users successfully retrieved',

@@ -40,6 +40,7 @@ export const getPage = (id) => {
             } else {
                 res.json().then((data) => {
                     reject(data);
+                    return;
                 });
             }
         })
@@ -49,7 +50,7 @@ export const getPage = (id) => {
     });
 }
 
-export const updatePageMetadata = (id, page) => {
+export const updatePage = (id, page) => {
     return new Promise((resolve, reject) => {
         fetch(`${URL}/pages/${id}`, {
             method: "PUT",
@@ -58,33 +59,6 @@ export const updatePageMetadata = (id, page) => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify(page),
-        })
-        .then((res) => {
-            if (res.status === 200) {
-                res.json().then((data) => {
-                    resolve(data);
-                });
-            } else {
-                res.json().then((data) => {
-                    reject(data);
-                });
-            }
-        })
-        .catch((err) => {
-            reject(err);
-        });
-    });
-}
-
-export const updatePageBlocks = (id, blocks) => {
-    return new Promise((resolve, reject) => {
-        fetch(`${URL}/pages/${id}/blocks`, {
-            method: "PUT",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(blocks),
         })
         .then((res) => {
             if (res.status === 200) {
@@ -130,10 +104,32 @@ export const createPage = (page) => {
     })
 }
 
+export const deletePage = (id) => {
+    return new Promise((resolve, reject) => {
+        fetch(`${URL}/pages/${id}`, {
+            method: "DELETE",
+            credentials: "include",
+        })
+        .then((res) => {
+            if (res.status === 200) {
+                    resolve();
+            } else {
+                res.json().then((data) => {
+                    reject(data);
+                });
+            }
+        })
+        .catch((err) => {
+            reject(err);
+        });
+    });
+}
+
 
 export default {
     getPages,
     getPage,
-    updatePageMetadata,
-    updatePageBlocks,
+    updatePage,
+    createPage,
+    deletePage
 }

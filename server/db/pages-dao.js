@@ -13,7 +13,6 @@ const filters = {
 };
 
 const pageBlocksCount = (blocks) => {
-  console.log(blocks);
   blocks = blocks ?? [];
   return {
     header: blocks.filter((b) => b.type === "header").length,
@@ -117,7 +116,6 @@ const getPagesHead = (filterName) => {
         created_at: row.created_at,
         author_name: row.author_name,
       }));
-      console.log(filterName, Object.keys(filters));
       if (filterName && Object.keys(filters).includes(filterName)) {
         resolve(pages.filter(filters[filterName]));
       } else {
@@ -186,12 +184,13 @@ const createPage = (page, blocks) => {
           reject(err);
           return;
         }
+        blocks = blocks.sort((a, b) => a.order - b.order).map((b) => ({...b, page_id: this.lastID}));
         const blocks_insert_promises = blocks.map((block, index) =>
-          appendBlock(this.lastID, { ...block, order: index })
+          appendBlock(this.lastID, { ...block, order: index + 1 }) // to make sure there are no gaps in the order
         );
         Promise.all(blocks_insert_promises)
           .then((blocks) => {
-            resolve({ id: this.lastID, ...page, blocks });
+            resolve({ ...page, blocks, id: this.lastID });
           })
           .catch((err) => {
             reject(err);
@@ -261,7 +260,6 @@ const updatePage = (page) => {
  * @returns {Promise<Block[]|Error>}
  */
 const getBlocks = (pageId) => {
-  console.log("getBlocks", pageId);
   return new Promise((resolve, reject) => {
     const sql = "SELECT * FROM blocks WHERE page_id = ? ORDER BY `order` ASC";
     db.all(sql, [pageId], (err, rows) => {
@@ -394,6 +392,7 @@ const updateBlocks = (page_id, newBlocks) => {
           "blocks not valid. either it is an empty array or the page_id's don't match throughout the array",
         code: 400,
       });
+      return;
     }
     // Check if page is still valid
     const bc = pageBlocksCount(newBlocks);
@@ -403,10 +402,11 @@ const updateBlocks = (page_id, newBlocks) => {
           "Page must contain at least one header and one paragraph or image.",
         code: 400,
       });
+      return;
     }
     const page = await getPageById(page_id);
     if (!page || page.error) {
-      reject(deleteResponse);
+      reject(page);
       return;
     }
 

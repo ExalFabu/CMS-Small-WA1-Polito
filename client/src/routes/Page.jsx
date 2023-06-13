@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Button, Container, Navbar } from "react-bootstrap";
 import { useLoaderData, useNavigate, useRevalidator } from "react-router-dom";
 import Block from "../components/Block";
-import { createPage, updatePageBlocks, updatePageMetadata } from "../api/pages";
+import { createPage, updatePage } from "../api/pages";
 import PageMetadata from "../components/PageMetadata";
+import ErrorHandler from "../components/ErrorHandler";
 
 const Page = ({ user, isNew = false }) => {
   const { revalidate } = useRevalidator();
@@ -12,10 +13,12 @@ const Page = ({ user, isNew = false }) => {
   const [editedPage, setEditedPage] = useState(page);
   const [editedBlocks, setEditedBlocks] = useState(page.blocks);
   const [pageHasBeenEdited, setPageHasBeenEdited] = useState(false);
+  const [saveError, setSaveError] = useState(null);
   useEffect(() => {
     setEditedPage(page);
-    setEditedBlocks(page.blocks)
-  }, [page])
+    setEditedBlocks(page.blocks);
+    setPageHasBeenEdited(false);
+  }, [page, JSON.stringify(page.blocks)])
 
   const saveEditedPageMetadata = (editedPageMetadata) => {
     setEditedPage({ ...editedPage, ...editedPageMetadata });
@@ -45,17 +48,19 @@ const Page = ({ user, isNew = false }) => {
   const editable = user && (user.role === "admin" || user.id === page.author);
 
   const saveEditedPage = () => {
-    const finalPage = {...editedPage}
+    const finalPage = { ...editedPage }
     finalPage.blocks = [...editedBlocks]
     if (!isNew) {
-      updatePageBlocks(page.id, editedBlocks)
+      updatePage(page.id, finalPage)
         .then((res) => {
           console.log(res);
           setPageHasBeenEdited(false);
+          setSaveError(null);
           revalidate(); // To trigger a reload of the data
         })
         .catch((err) => {
           console.log(err);
+          setSaveError(err);
           // TODO: Toast error
         });
     }
@@ -63,10 +68,12 @@ const Page = ({ user, isNew = false }) => {
       // Create new page and redirect to it
       createPage(finalPage).then(
         (page) => {
+          setSaveError(null); // should be useless, but always better to be safe than sorry
           navigate(`/page/${page.id}`);
         }
       ).catch((err) => {
-        console.error(err)
+        console.error(err);
+        setSaveError(err);
         // TODO: Handle error
       })
       console.log(finalPage)
@@ -74,11 +81,15 @@ const Page = ({ user, isNew = false }) => {
   };
   return (
     <div className="w-75 mx-auto">
+      {saveError !== null ? (
+        <ErrorHandler error={saveError} closeError={() => setSaveError(null)} />) : (<></>
+      )}
       <div>
         <PageMetadata
           page={editedPage}
           editable={editable}
           isAdmin={user && user.role === "admin"}
+          user={user}
           saveEditedPageMetadata={saveEditedPageMetadata}
         />
       </div>
@@ -98,7 +109,7 @@ const Page = ({ user, isNew = false }) => {
                 order: editedBlocks.length + 1,
                 type: "paragraph",
                 content: "Empty Paragraph",
-                page: page.id,
+                page_id: page.id,
                 id: editedBlocks.length + 1,
               })
             }

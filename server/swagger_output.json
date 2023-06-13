@@ -102,7 +102,7 @@
     "/meta/editors": {
       "get": {
         "tags": [
-          "Meta"
+          "Site"
         ],
         "description": "Endpoint to get all editors",
         "parameters": [],
@@ -387,30 +387,6 @@
           "Pages"
         ],
         "description": "Endpoint to delete a page and all its blocks",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/pages/{id}/blocks": {
-      "put": {
-        "tags": [
-          "Pages"
-        ],
-        "description": "Endpoint to update all blocks of a page, removing the previous ones",
         "parameters": [
           {
             "name": "id",

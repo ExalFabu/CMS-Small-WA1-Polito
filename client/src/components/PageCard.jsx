@@ -2,14 +2,16 @@ import React from "react";
 import { Button, Card } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, useRevalidator } from "react-router-dom";
 import dayjs from "dayjs";
+import pagesApi from "../api/pages";
 
 const PageCard = ({ page, user }) => {
+  const { revalidate } = useRevalidator();
   const isDeletable =
     user && (user.role === "admin" || user.id === page.author);
 
-  const isDraft =  !page.published_at || dayjs(page.published_at).isAfter(dayjs());
+  const isDraft = !page.published_at || dayjs(page.published_at).isAfter(dayjs());
 
   const dateText = isDraft ? "Draft" : dayjs(page.published_at).format("DD/MM/YYYY");
 
@@ -18,6 +20,17 @@ const PageCard = ({ page, user }) => {
   const goToPage = () => {
     navigate(`/page/${page.id}`);
   };
+
+  const deletePage = (e) => {
+    e.stopPropagation();
+    console.log("Deleting page", page);
+    pagesApi.deletePage(page.id).then((res) => {
+      console.log(res);
+      revalidate();
+    });
+  };
+
+
   return (
     <>
       <style>
@@ -37,7 +50,7 @@ const PageCard = ({ page, user }) => {
       `}
       </style>
       <Card className="m-2 pageCard" onClick={goToPage}>
-        <Card.Body>
+        <Card.Body >
           <Card.Title>{page.title}</Card.Title>
           <Card.Subtitle className="mb-2 text-muted">
             {" by "}
@@ -51,7 +64,7 @@ const PageCard = ({ page, user }) => {
           {dateText}
 
           {isDeletable ? (
-            <Button variant="danger" className="mx-auto">
+            <Button variant="danger" className="mx-auto" onClick={deletePage}>
               Elimina <FontAwesomeIcon icon={faTrash} />
             </Button>
           ) : (
