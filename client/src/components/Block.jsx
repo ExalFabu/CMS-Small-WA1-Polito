@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Container, Row, Col, Button, Form, Stack, Image } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -6,6 +6,8 @@ import {
   faFloppyDisk,
   faCancel,
   faTrash,
+  faArrowUp,
+  faArrowDown,
 } from "@fortawesome/free-solid-svg-icons";
 import { getImages } from "../api/meta";
 import { URL_IMAGES } from "../api";
@@ -77,6 +79,7 @@ const EditableBlock = ({ block, setBlock }) => {
         <Form.Control
           type="number"
           value={block.order}
+          disabled
           onChange={(ev) =>
             setBlock({ ...block, order: ev.target.valueAsNumber })
           }
@@ -86,26 +89,30 @@ const EditableBlock = ({ block, setBlock }) => {
   );
 };
 
-const Block = ({ block, editable, setBlock }) => {
+const Block = ({ block, editable, setBlock, length }) => {
   const [localBlock, setLocalBlock] = useState(block);
   const [isEditing, setIsEditing] = useState(false);
 
-  const saveBlock = () => {
+  useEffect(() => {
+    setLocalBlock(block);
+  }, [block]);
+
+  const saveBlock = useCallback(() => {
     setBlock(localBlock);
     setIsEditing(false);
-  };
+  }, [localBlock, setBlock]);
 
-  const cancelEdit = () => {
+  const cancelEdit = useCallback(() => {
     setLocalBlock(block);
     setIsEditing(false);
-  };
+  }, [block]);
 
-  const deleteBlock = () => {
+  const deleteBlock = useCallback(() => {
     setBlock(block, true);
-  };
+  }, [block, setBlock]);
 
   return (
-    <Container className="my-3">
+    <Container className="my-3" style={editable ? {borderTop: "dashed 1px gray"} : {}}>
       <Row className="align-items-center">
         <Col>
           {editable && isEditing ? (
@@ -124,14 +131,6 @@ const Block = ({ block, editable, setBlock }) => {
                 <div className="hr border"></div>
                 <Button
                   size="sm"
-                  variant="outline-danger"
-                  onClick={deleteBlock}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </Button>
-                <div className="hr border"></div>
-                <Button
-                  size="sm"
                   variant="outline-secondary"
                   onClick={cancelEdit}
                 >
@@ -139,6 +138,23 @@ const Block = ({ block, editable, setBlock }) => {
                 </Button>
               </Stack>
             ) : (
+              <Stack gap={2} direction={block.type === "image" ? "vertical":"horizontal"}>
+              <Button
+                size="sm"
+                variant="outline-primary"
+                disabled={block.order === 1}
+                onClick={() => setBlock({ ...block, order: block.order - 1 })}
+              >
+                <FontAwesomeIcon icon={faArrowUp} />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline-primary"
+                disabled={block.order === length}
+                onClick={() => setBlock({ ...block, order: block.order + 1 })}
+              >
+                <FontAwesomeIcon icon={faArrowDown} />
+              </Button>
               <Button
                 size="sm"
                 variant="outline-primary"
@@ -146,6 +162,14 @@ const Block = ({ block, editable, setBlock }) => {
               >
                 <FontAwesomeIcon icon={faPenToSquare} />
               </Button>
+              <Button
+                size="sm"
+                variant="outline-danger"
+                onClick={deleteBlock}
+              >
+                <FontAwesomeIcon icon={faTrash} />
+              </Button>
+              </Stack>
             )}
           </Col>
         ) : (

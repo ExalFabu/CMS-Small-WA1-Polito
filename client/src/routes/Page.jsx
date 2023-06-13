@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Container, Form, Navbar } from "react-bootstrap";
 import { useLoaderData, useNavigate, useRevalidator } from "react-router-dom";
 import Block from "../components/Block";
 import { createPage, updatePage } from "../api/pages";
 import PageMetadata from "../components/PageMetadata";
 import ErrorHandler from "../components/ErrorHandler";
+import dayjs from "dayjs";
 
 const Page = ({ user, isNew = false, forcedFrontOffice }) => {
   const { revalidate } = useRevalidator();
@@ -21,7 +22,7 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
   }, [page, JSON.stringify(page.blocks)])
 
   const saveEditedPageMetadata = (editedPageMetadata) => {
-    setEditedPage({ ...editedPage, ...editedPageMetadata });
+    setEditedPage((currEditedPage) => ({ ...currEditedPage, ...editedPageMetadata }));
     setPageHasBeenEdited(true);
   };
 
@@ -39,6 +40,7 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
       }
       blocks.forEach((it, idx) => {
         it.order = idx + 1; // To make sure that the order is correct and there are no duplicates
+        console.log(it.content, it.order);
       });
       setPageHasBeenEdited(true);
       return blocks;
@@ -47,7 +49,7 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
 
   const editable = useMemo(() => (user && (user.role === "admin" || user.id === page.author) && !forcedFrontOffice), [user, page.author, forcedFrontOffice]);
 
-  const saveEditedPage = () => {
+  const saveEditedPage = useCallback(() => {
     const finalPage = { ...editedPage }
     finalPage.blocks = [...editedBlocks]
     if (!isNew) {
@@ -78,12 +80,10 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
       })
       console.log(finalPage)
     }
-  };
+  }, [editedPage, editedBlocks, isNew, page.id]);
   return (
     <div className="w-75 mx-auto">
-      {saveError !== null ? (
-        <ErrorHandler error={saveError} closeError={() => setSaveError(null)} />) : (<></>
-      )}
+      {saveError !== null && <ErrorHandler error={saveError} closeError={() => setSaveError(null)} />}
       <div>
         <PageMetadata
           page={editedPage}
@@ -99,6 +99,7 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
           block={block}
           editable={editable}
           setBlock={setEditedBlock}
+          length={editedBlocks.length}
         />
       ))}
       {editable ? (
@@ -110,7 +111,7 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
                 type: "paragraph",
                 content: "Empty Paragraph",
                 page_id: page.id,
-                id: editedBlocks.length + 1,
+                id: dayjs().unix(),
               })
             }
             variant="primary"
