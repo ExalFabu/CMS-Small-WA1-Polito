@@ -5,18 +5,16 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Col,
   Container,
   FloatingLabel,
   Form,
-  InputGroup,
   Row,
   Stack,
 } from "react-bootstrap";
-import { useLoaderData } from "react-router-dom";
 import { getEditors } from "../api/meta";
 import { PubishedLabel } from "./PageCard";
 

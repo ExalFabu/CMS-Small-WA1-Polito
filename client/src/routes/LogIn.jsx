@@ -17,7 +17,7 @@ function LoginForm(props) {
         props.login(user);
         navigate(-1);
       })
-      .catch((err) => {
+      .catch(() => {
         // NB: Generic error message, should not give additional info (e.g., if user exists etc.)
         setErrorMessage("Wrong username or password");
       });

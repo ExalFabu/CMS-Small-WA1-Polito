@@ -40,7 +40,7 @@ function App() {
     if (!user) {
       auth.checkAuth().then((user) => setUser(user));
     }
-  }, []);
+  });
 
 
   return <RouterProvider router={router} />;

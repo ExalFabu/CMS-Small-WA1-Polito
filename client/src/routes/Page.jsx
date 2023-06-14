@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Container, Form, Navbar } from "react-bootstrap";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button, Container, Navbar } from "react-bootstrap";
 import { useLoaderData, useNavigate, useRevalidator } from "react-router-dom";
 import Block from "../components/Block";
 import { createPage, updatePage } from "../api/pages";
@@ -17,9 +17,9 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
   const [saveError, setSaveError] = useState(null);
   useEffect(() => {
     setEditedPage(page);
-    setEditedBlocks(page.blocks);
     setPageHasBeenEdited(false);
-  }, [page, JSON.stringify(page.blocks)])
+  }, [page])
+
 
   const saveEditedPageMetadata = (editedPageMetadata) => {
     setEditedPage((currEditedPage) => ({ ...currEditedPage, ...editedPageMetadata }));
@@ -40,7 +40,6 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
       }
       blocks.forEach((it, idx) => {
         it.order = idx + 1; // To make sure that the order is correct and there are no duplicates
-        console.log(it.content, it.order);
       });
       setPageHasBeenEdited(true);
       return blocks;
@@ -54,14 +53,12 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
     finalPage.blocks = [...editedBlocks]
     if (!isNew) {
       updatePage(page.id, finalPage)
-        .then((res) => {
-          console.log(res);
+        .then(() => {
           setPageHasBeenEdited(false);
           setSaveError(null);
           revalidate(); // To trigger a reload of the data
         })
         .catch((err) => {
-          console.log(err);
           setSaveError(err);
           // TODO: Toast error
         });
@@ -78,9 +75,8 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
         setSaveError(err);
         // TODO: Handle error
       })
-      console.log(finalPage)
     }
-  }, [editedPage, editedBlocks, isNew, page.id]);
+  }, [editedPage, editedBlocks, isNew, page.id, navigate, revalidate]);
   return (
     <div className="w-75 mx-auto">
       {saveError !== null && <ErrorHandler error={saveError} closeError={() => setSaveError(null)} />}

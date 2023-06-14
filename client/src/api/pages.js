@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import {URL} from './index.js'
 
 
@@ -26,7 +25,6 @@ export const getPages = () => {
 }
 
 export const getPage = (id) => {
-    console.log("getPage of id: ", id)
     return new Promise((resolve, reject) => {
         fetch(`${URL}/pages/${id}`, {
             method: "GET",

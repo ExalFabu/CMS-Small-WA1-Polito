@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import React, { useEffect, useMemo } from "react";
 import { Button, Container } from "react-bootstrap";
-import { Link, useLoaderData, useNavigate } from "react-router-dom";
+import { useLoaderData, useNavigate } from "react-router-dom";
 import PageCard from "../components/PageCard";
 
 const pageIsPublished = (page) => dayjs(page.published_at).isBefore(dayjs());

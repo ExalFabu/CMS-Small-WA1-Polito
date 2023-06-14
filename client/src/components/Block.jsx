@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Container, Row, Col, Button, Form, Stack, Image } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPenToSquare,
   faFloppyDisk,
   faCancel,
-  faTrash,
   faArrowUp,
   faArrowDown,
 } from "@fortawesome/free-solid-svg-icons";
@@ -66,7 +65,7 @@ const EditableBlock = ({ block, setBlock }) => {
             isInvalid={selectableImages.find((it) => it.path === block.content) === undefined}
           >
             {[...selectableImages, { path: block.content, name: "Choose an image" }].map((image) => (
-              <option key={image.path} value={image.path}>
+              <option key={image.name} value={image.path}>
                 {image.name}
               </option>
             ))}

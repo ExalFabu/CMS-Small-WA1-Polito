@@ -1,14 +1,12 @@
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
-import { Button, Container, Navbar } from "react-bootstrap";
-import { isRouteErrorResponse, Outlet, useNavigate, useRouteError } from "react-router-dom";
+import { Button, Container } from "react-bootstrap";
+import { useNavigate, useRouteError } from "react-router-dom";
 
 const ErrorHandler = ({error: errorObject, closeError}) => {
     console.log(errorObject)
     const navigate = useNavigate();
     const routeError = useRouteError();
-    const isErrorResponse = isRouteErrorResponse(routeError);
     const showDebugError = true;
     if(errorObject) {
         return (<Container className="d-flex w-full h-2 mb-4 bg-warning-subtle justify-content-between align-content-center">
@@ -30,7 +28,7 @@ const ErrorHandler = ({error: errorObject, closeError}) => {
         >
             <h1>Errore</h1>
             <p>Si è verificato un errore durante il caricamento della pagina.</p>
-            <p>Se il problema persiste, contatta l'amministratore.</p>
+            <p>Se il problema persiste, contatta l&apos;amministratore.</p>
             {showDebugError && 
             <div>
                 <pre>{JSON.stringify(routeError)}</pre>

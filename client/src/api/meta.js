@@ -1,6 +1,6 @@
 "use strict";
 
-import { URL, URL_IMAGES } from "./index";
+import { URL } from "./index";
 
 export const getSiteName = () => {
   return new Promise((resolve, reject) => {

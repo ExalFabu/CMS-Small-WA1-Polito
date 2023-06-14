@@ -1,7 +1,5 @@
-import React, { useMemo } from "react";
-import { Button, Card, Stack } from "react-bootstrap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { useMemo } from "react";
+import {  Card, Stack } from "react-bootstrap";
 import { useNavigate, useRevalidator } from "react-router-dom";
 import dayjs from "dayjs";
 import pagesApi from "../api/pages";
@@ -17,7 +15,7 @@ export const PubishedLabel = ({date}) => {
 
 const PageCard = ({ page, user, forcedFrontOffice }) => {
   const { revalidate } = useRevalidator();
-  const isDeletable = useMemo(() => (user && (user.role === "admin" || user.id === page.author) && !forcedFrontOffice), [user, forcedFrontOffice])
+  const isDeletable = useMemo(() => (user && (user.role === "admin" || user.id === page.author) && !forcedFrontOffice), [user, forcedFrontOffice, page.author])
 
   const navigate = useNavigate();
 
@@ -27,11 +25,10 @@ const PageCard = ({ page, user, forcedFrontOffice }) => {
 
   const deletePage = (e) => {
     e.stopPropagation();
-    console.log("Deleting page", page);
-    pagesApi.deletePage(page.id).then((res) => {
-      console.log(res);
+    pagesApi.deletePage(page.id).then(() => {
       revalidate();
     });
+    // TODO: catch errors
   };
 
 

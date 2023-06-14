@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import {URL} from './index.js'
 
 export const login = (username, password) => {

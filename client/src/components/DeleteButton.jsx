@@ -1,6 +1,6 @@
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 
 const DeleteButton = ({ onClick, label, ...props }) => {
