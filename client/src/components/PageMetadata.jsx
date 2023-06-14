@@ -145,7 +145,7 @@ const ViewModePageMetadata = ({ page, setEditMode, editable }) => {
     <Container className="">
       <Row className="text-center align-items-center d-flex justify-content-around">
         <Col className="text-muted">
-          Autore: <span>{page.author_name}</span>
+          <span>{page.author_name}</span>
         </Col>
         <Col>
           <h1>{page.title}</h1>

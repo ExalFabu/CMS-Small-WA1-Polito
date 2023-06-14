@@ -5,6 +5,7 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate, useRevalidator } from "react-router-dom";
 import dayjs from "dayjs";
 import pagesApi from "../api/pages";
+import DeleteButton from "./DeleteButton";
 
 export const PubishedLabel = ({date}) => {
   const publishedDate = dayjs(date);
@@ -67,9 +68,10 @@ const PageCard = ({ page, user, forcedFrontOffice }) => {
           <PubishedLabel date={page.published_at} />
 
           {isDeletable ? (
-            <Button variant="danger" className="mx-auto" onClick={deletePage}>
-              Elimina <FontAwesomeIcon icon={faTrash} />
-            </Button>
+            // <Button variant="danger" className="mx-auto" onClick={deletePage}>
+            //   Elimina <FontAwesomeIcon icon={faTrash} />
+            // </Button>
+            <DeleteButton onClick={deletePage} label={"Delete"} />
           ) : (
             <> </>
           )}

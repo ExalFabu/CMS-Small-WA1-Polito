@@ -102,9 +102,11 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
           length={editedBlocks.length}
         />
       ))}
-      {editable ? (
-        <div className="d-flex my-5">
-          <Button
+
+      <Navbar fixed="bottom">
+        {editable ? (
+          <Container>
+            <Button
             onClick={() =>
               setEditedBlock({
                 order: editedBlocks.length + 1,
@@ -119,17 +121,10 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
           >
             Aggiungi Blocco
           </Button>
-        </div>
-      ) : (
-        <></>
-      )}
-      <Navbar fixed="bottom">
-        {editable ? (
-          <Container>
             <Button
               disabled={!pageHasBeenEdited}
               onClick={saveEditedPage}
-              variant="primary"
+              variant="success"
               className="mx-auto"
             >
               {isNew ? "Crea Pagina" : "Salva Modifiche"}
