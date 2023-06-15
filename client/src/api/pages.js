@@ -88,8 +88,8 @@ export const createPage = (page) => {
         })
         .then((res) => {
             res.json().then((page) => {
-                resolve(page);
-                return
+                if(res.status !== 200) reject(page);
+                else resolve(page);
             }).catch((err) => {
                 reject(err)
                 return;

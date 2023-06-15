@@ -37,14 +37,11 @@ const ViewBlock = ({ block }) => {
   }
 };
 
-const EditableBlock = ({ block, setBlock }) => {
-  const [selectableImages, setSelectableImages] = useState([]);
-  useEffect(() => {
-    getImages().then((images) => setSelectableImages(images));
-  }, []);
+const EditableBlock = ({ block, setBlock, images, formSubmit }) => {
+
 
   return (
-    <Form className="my-2" >
+    <Form className="my-2" onSubmit={formSubmit}>
       <Form.Group>
         <Form.Label>Tipo</Form.Label>
         <Form.Select
@@ -62,9 +59,9 @@ const EditableBlock = ({ block, setBlock }) => {
           <Form.Select
             value={block.content}
             onChange={(ev) => setBlock({ ...block, content: ev.target.value })}
-            isInvalid={selectableImages.find((it) => it.path === block.content) === undefined}
+            isInvalid={images.find((it) => it.path === block.content) === undefined}
           >
-            {[...selectableImages, { path: block.content, name: "Choose an image" }].map((image) => (
+            {[...images, { path: block.content, name: "Choose an image" }].map((image) => (
               <option key={image.name} value={image.path}>
                 {image.name}
               </option>
@@ -78,23 +75,13 @@ const EditableBlock = ({ block, setBlock }) => {
             {...(block.type === "paragraph" && { as: "textarea", rows: 3 })}
             value={block.content}
             onChange={(ev) => setBlock({ ...block, content: ev.target.value })}
-            isInvalid={block.content === ""}
+            isInvalid={!block.content.trim()}
           />
           <Form.Control.Feedback type="invalid">Cannot be empty </Form.Control.Feedback>
         </>
         )}
       </Form.Group>
-      <Form.Group>
-        <Form.Label>Ordine</Form.Label>
-        <Form.Control
-          type="number"
-          value={block.order}
-          disabled
-          onChange={(ev) =>
-            setBlock({ ...block, order: ev.target.valueAsNumber })
-          }
-        />
-      </Form.Group>
+      
     </Form>
   );
 };
@@ -102,12 +89,18 @@ const EditableBlock = ({ block, setBlock }) => {
 const Block = ({ block, editable, setBlock, isFirst, isLast }) => {
   const [localBlock, setLocalBlock] = useState(block);
   const [isEditing, setIsEditing] = useState(false);
+  const [selectableImages, setSelectableImages] = useState([]);
+  useEffect(() => {
+    getImages().then((images) => setSelectableImages(images));
+  }, []);
+
 
   useEffect(() => {
     setLocalBlock(block);
   }, [block]);
 
-  const saveBlock = useCallback(() => {
+  const saveBlock = useCallback((e) => {
+    e?.stopPropagation();
     setBlock(localBlock);
     setIsEditing(false);
   }, [localBlock, setBlock]);
@@ -122,7 +115,10 @@ const Block = ({ block, editable, setBlock, isFirst, isLast }) => {
   }, [block, setBlock]);
 
   const isValid = useCallback(() => {
-    return localBlock.content !== "";
+    if(localBlock.type === "image") {
+      return selectableImages.find((it) => it.path === localBlock.content) !== undefined;
+    }
+    return !!localBlock.content.trim();
   }, [localBlock]);
 
   return (
@@ -191,7 +187,7 @@ const Block = ({ block, editable, setBlock, isFirst, isLast }) => {
         )}
         <Col>
           {editable && isEditing ? (
-            <EditableBlock block={localBlock} setBlock={setLocalBlock} />
+            <EditableBlock block={localBlock} setBlock={setLocalBlock} images={selectableImages} formSubmit={saveBlock} />
           ) : (
             <ViewBlock block={localBlock} />
           )}

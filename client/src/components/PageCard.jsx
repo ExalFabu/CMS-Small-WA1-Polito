@@ -24,7 +24,7 @@ const PageCard = ({ page, user, forcedFrontOffice }) => {
   };
 
   const deletePage = (e) => {
-    e.stopPropagation();
+    e?.stopPropagation();
     pagesApi.deletePage(page.id).then(() => {
       revalidate();
     });

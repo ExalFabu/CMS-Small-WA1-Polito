@@ -105,7 +105,7 @@ const getPageById = (id) => {
 const getPagesHead = (filterName) => {
   return new Promise((resolve, reject) => {
     const sql =
-      "SELECT p.*, a.name as author_name FROM pages p, users a WHERE a.id = p.author";
+      "SELECT p.*, a.name as author_name FROM pages p, users a WHERE a.id = p.author ORDER BY p.published_at";
     db.all(sql, [], (err, rows) => {
       if (err) {
         reject(prettifyUnexpectedError(err));
@@ -141,6 +141,7 @@ const createPage = (page, blocks) => {
         error: "Author is required.",
         code: 400,
       });
+      return;
     }
     if (
       page.published_at !== null &&
@@ -152,6 +153,7 @@ const createPage = (page, blocks) => {
         details: "Must be a valid Date or a Draft",
         code: 400,
       });
+      return;
     }
     if (!Array.isArray(blocks)) {
       reject({
@@ -160,6 +162,7 @@ const createPage = (page, blocks) => {
         extra: blocks,
         code: 400,
       });
+      return;
     }
     if (
       blocks.length <= 1 ||
@@ -175,6 +178,7 @@ const createPage = (page, blocks) => {
         extra: blocks,
         code: 400,
       });
+      return;
     }
     page.published_at = page.published_at
       ? dayjs(page.published_at).toISOString()
@@ -406,7 +410,8 @@ const updateBlocks = (page_id, newBlocks) => {
       newBlocks.some((b) => b.page_id !== page_id)
     ) {
       reject({
-        error:
+        error: "Invalid Request",
+        details:
           "blocks not valid. either it is an empty array or the page_id's don't match throughout the array",
         code: 400,
       });
@@ -416,7 +421,8 @@ const updateBlocks = (page_id, newBlocks) => {
     const bc = pageBlocksCount(newBlocks);
     if (bc.header === 0 || bc.paragraph + bc.image === 0) {
       reject({
-        error:
+        error: "Unable to update page",
+        details:
           "Page must contain at least one header and one paragraph or image.",
         code: 400,
       });

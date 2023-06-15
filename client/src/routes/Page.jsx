@@ -77,6 +77,7 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
       // Create new page and redirect to it
       createPage(finalPage).then(
         (page) => {
+          console.log(page)
           setSaveError(null); // should be useless, but always better to be safe than sorry
           navigate(`/page/${page.id}`);
         }
@@ -96,7 +97,7 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
     </div>
   }
   return (
-    <div className="w-75 mx-auto">
+    <div className="w-75 mx-auto pb-5">
       {saveError !== null && <ErrorHandler error={saveError} closeError={() => setSaveError(null)} />}
       <div>
         <PageMetadata

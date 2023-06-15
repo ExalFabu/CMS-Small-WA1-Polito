@@ -13,6 +13,7 @@ const ErrorHandler = ({error: errorObject, closeError}) => {
             <div>
             <span>{errorObject.error ?? "Qualcosa è andato storto"} </span>
             {errorObject?.details?.error && <span>{' '}({errorObject.details.error})</span>}
+            {errorObject?.details?.details && <span>{' '}({errorObject.details.details})</span>}
             </div>
             <Button onClick={closeError} variant={"outline-warning"} size="sm">
                 <FontAwesomeIcon icon={faClose} />

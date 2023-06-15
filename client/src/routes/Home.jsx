@@ -11,6 +11,7 @@ const Home = ({ user, forcedFrontOffice}) => {
   const [filteredPages, setFilteredPages] = React.useState(pages);
   useEffect(() => {
     setFilteredPages(pages);
+    console.log("Pages in Home changed", pages)
   }, [pages]);
   const canCreatePage = useMemo(() => (user && (user.role === "admin" || user.role === "editor") && !forcedFrontOffice), [user, forcedFrontOffice])
 
