@@ -109,6 +109,10 @@ router.get("/:id", [check("id").isInt()], async function (req, res) {
   const id = parseInt(req.params.id);
   try {
     const page = await pagesDao.getPageById(id);
+    if(page.error) {
+      res.status(page.code ?? 401).json(page);
+      return;
+    }
     const now = dayjs();
     const isPublished = dayjs(page.published_at).isBefore(now);
     if (!isPublished) {

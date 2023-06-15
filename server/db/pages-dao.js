@@ -70,6 +70,7 @@ const getPageById = (id) => {
       if (row === undefined) {
         resolve({
           error: "Page not found.",
+          details: `Page does not exist.`,
           code: 404,
         });
       } else {

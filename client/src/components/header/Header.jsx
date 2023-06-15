@@ -11,7 +11,7 @@ import {
   faHouseChimney,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { logout } from "../api/auth";
+import { logout } from "../../api/auth";
 
 const Header = ({ user, logout: stateLogout, forcedFrontOffice, setFFO }) => {
   const doLogout = () => {

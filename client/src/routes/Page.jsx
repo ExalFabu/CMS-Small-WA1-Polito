@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Container, Navbar } from "react-bootstrap";
 import { useLoaderData, useNavigate, useRevalidator } from "react-router-dom";
-import Block from "../components/Block";
+import Block from "../components/page/Block";
 import { createPage, updatePage } from "../api/pages";
-import PageMetadata from "../components/PageMetadata";
+import PageMetadata from "../components/page/PageMetadata";
 import ErrorHandler from "../components/ErrorHandler";
 import dayjs from "dayjs";
 

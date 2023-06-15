@@ -13,7 +13,7 @@ import {
   faFloppyDisk,
   faCancel,
 } from "@fortawesome/free-solid-svg-icons";
-import api from "../api/meta";
+import api from "../../api/meta";
 
 const TitleSite = ({ user, forcedFrontOffice }) => {
   const [siteName, setSiteName] = useState("");

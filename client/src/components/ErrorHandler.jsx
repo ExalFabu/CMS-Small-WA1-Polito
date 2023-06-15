@@ -24,11 +24,10 @@ const ErrorHandler = ({error: errorObject, closeError}) => {
         <Container
             bg="light"
             variant="light"
-            className="mt-4 px-4 justify-content-center d-flex flex-column"
+            className="mt-4 px-4 justify-content-center d-flex flex-column text-center"
         >
-            <h1>Errore</h1>
-            <p>Si è verificato un errore durante il caricamento della pagina.</p>
-            <p>Se il problema persiste, contatta l&apos;amministratore.</p>
+            <h1>{routeError.error ?? 'Something went wrong while loading the page'}</h1>
+            <p>{routeError.details ?? 'If the problem persists, contact the administrator'}</p>
             {showDebugError && 
             <div>
                 <pre>{JSON.stringify(routeError)}</pre>

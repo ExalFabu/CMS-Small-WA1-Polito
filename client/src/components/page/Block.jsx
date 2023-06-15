@@ -8,9 +8,9 @@ import {
   faArrowUp,
   faArrowDown,
 } from "@fortawesome/free-solid-svg-icons";
-import { getImages } from "../api/meta";
-import { URL_IMAGES } from "../api";
-import DeleteButton from "./DeleteButton";
+import { getImages } from "../../api/meta";
+import { URL_IMAGES } from "../../api";
+import DeleteButton from "../DeleteButton";
 
 const HeaderBlock = ({ block }) => {
   return <h2>{block.content}</h2>;

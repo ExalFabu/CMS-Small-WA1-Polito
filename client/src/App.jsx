@@ -6,7 +6,7 @@ import {
   Route,
   RouterProvider,
 } from "react-router-dom";
-import Header from "./components/Header";
+import Header from "./components/header/Header";
 import Home from "./routes/Home";
 import LoginForm from "./routes/LogIn";
 import auth from "./api/auth";

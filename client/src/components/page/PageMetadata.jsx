@@ -15,8 +15,8 @@ import {
   Row,
   Stack,
 } from "react-bootstrap";
-import { getEditors } from "../api/meta";
-import { PubishedLabel } from "./PageCard";
+import { getEditors } from "../../api/meta";
+import { PubishedLabel } from "../PageCard";
 
 const EditModePageMetadata = ({ page, isAdmin, user, saveEditedPageMetadata, cancelEdit }) => {
   const [editedPage, setEditedPage] = useState(page);
