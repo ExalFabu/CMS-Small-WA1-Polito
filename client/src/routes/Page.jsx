@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Container, Navbar } from "react-bootstrap";
+import { Button, Container, Navbar, Spinner } from "react-bootstrap";
 import { useLoaderData, useNavigate, useRevalidator } from "react-router-dom";
 import Block from "../components/page/Block";
 import { createPage, updatePage } from "../api/pages";
@@ -7,18 +7,27 @@ import PageMetadata from "../components/page/PageMetadata";
 import ErrorHandler from "../components/ErrorHandler";
 import dayjs from "dayjs";
 
+const deepCopy = (obj) => {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+
 const Page = ({ user, isNew = false, forcedFrontOffice }) => {
-  const { revalidate } = useRevalidator();
-  const navigate = useNavigate()
+  const { state: revalidatorState, revalidate } = useRevalidator();
   const page = useLoaderData();
-  const [editedPage, setEditedPage] = useState(page);
-  const [editedBlocks, setEditedBlocks] = useState(page.blocks);
+
+  const navigate = useNavigate()
+  const [editedPage, setEditedPage] = useState(deepCopy({ ...page, blocks: [] })); // Blocks are not needed in this object
+  const [editedBlocks, setEditedBlocks] = useState(deepCopy(page.blocks)); // We need to deep copy the blocks, otherwise we will modify the original page
   const [pageHasBeenEdited, setPageHasBeenEdited] = useState(false);
   const [saveError, setSaveError] = useState(null);
   useEffect(() => {
-    setEditedPage(page);
+    setEditedPage(deepCopy({ ...page, blocks: [] }));
+    setEditedBlocks(deepCopy(page.blocks));
+    console.log("Page from useLoaderData changed")
     setPageHasBeenEdited(false);
-  }, [page])
+  }, [page, JSON.stringify(page.blocks)])
+
 
 
   const saveEditedPageMetadata = (editedPageMetadata) => {
@@ -40,10 +49,11 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
       }
       blocks.forEach((it, idx) => {
         it.order = idx + 1; // To make sure that the order is correct and there are no duplicates
+        console.log(it.id, it.content, it.order)
       });
-      setPageHasBeenEdited(true);
       return blocks;
     });
+    setPageHasBeenEdited(true);
   };
 
   const editable = useMemo(() => (user && (user.role === "admin" || user.id === page.author) && !forcedFrontOffice), [user, page.author, forcedFrontOffice]);
@@ -77,6 +87,14 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
       })
     }
   }, [editedPage, editedBlocks, isNew, page.id, navigate, revalidate]);
+  if (revalidatorState === "loading") {
+    console.log("Loading");
+    return <div className="position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center">
+      <Spinner animation="border" role="status">
+        <span className="visually-hidden">Loading...</span>
+      </Spinner>
+    </div>
+  }
   return (
     <div className="w-75 mx-auto">
       {saveError !== null && <ErrorHandler error={saveError} closeError={() => setSaveError(null)} />}
@@ -89,13 +107,14 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
           saveEditedPageMetadata={saveEditedPageMetadata}
         />
       </div>
-      {editedBlocks.map((block) => (
+      {editedBlocks.map((block, idx) => (
         <Block
           key={block.id}
           block={block}
           editable={editable}
           setBlock={setEditedBlock}
-          length={editedBlocks.length}
+          isFirst={idx === 0}
+          isLast={idx === editedBlocks.length - 1}
         />
       ))}
 
@@ -103,20 +122,20 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
         {editable ? (
           <Container>
             <Button
-            onClick={() =>
-              setEditedBlock({
-                order: editedBlocks.length + 1,
-                type: "paragraph",
-                content: "Empty Paragraph",
-                page_id: page.id,
-                id: dayjs().unix(),
-              })
-            }
-            variant="primary"
-            className="mx-auto"
-          >
-            Aggiungi Blocco
-          </Button>
+              onClick={() =>
+                setEditedBlock({
+                  order: editedBlocks.length + 1,
+                  type: "paragraph",
+                  content: "Empty Paragraph",
+                  page_id: page.id,
+                  id: dayjs().unix(),
+                })
+              }
+              variant="primary"
+              className="mx-auto"
+            >
+              Aggiungi Blocco
+            </Button>
             <Button
               disabled={!pageHasBeenEdited}
               onClick={saveEditedPage}

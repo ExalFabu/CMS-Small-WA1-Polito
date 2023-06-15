@@ -99,7 +99,7 @@ const EditableBlock = ({ block, setBlock }) => {
   );
 };
 
-const Block = ({ block, editable, setBlock, length }) => {
+const Block = ({ block, editable, setBlock, isFirst, isLast }) => {
   const [localBlock, setLocalBlock] = useState(block);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -150,7 +150,7 @@ const Block = ({ block, editable, setBlock, length }) => {
                   <Button
                     size="sm"
                     variant="outline-primary"
-                    disabled={block.order === 1}
+                    disabled={isFirst}
                     onClick={() => setBlock({ ...block, order: block.order - 1 })}
                   >
                     <FontAwesomeIcon icon={faArrowUp} />
@@ -167,7 +167,7 @@ const Block = ({ block, editable, setBlock, length }) => {
                   <Button
                     size="sm"
                     variant="outline-primary"
-                    disabled={block.order === length}
+                    disabled={isLast}
                     onClick={() => setBlock({ ...block, order: block.order + 1 })}
                   >
                     <FontAwesomeIcon icon={faArrowDown} />
