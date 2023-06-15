@@ -61,10 +61,11 @@ const pageBlocksCount = (blocks) => {
  */
 const getPageById = (id) => {
   return new Promise((resolve, reject) => {
-    const sql = "SELECT p.*, u.name as author_name FROM pages p, users u WHERE p.id = ? AND u.id = p.author";
+    const sql =
+      "SELECT p.*, u.name as author_name FROM pages p, users u WHERE p.id = ? AND u.id = p.author";
     db.get(sql, [id], (err, row) => {
       if (err) {
-        reject(err);
+        reject(prettifyUnexpectedError(err));
         return;
       }
       if (row === undefined) {
@@ -103,10 +104,11 @@ const getPageById = (id) => {
  */
 const getPagesHead = (filterName) => {
   return new Promise((resolve, reject) => {
-    const sql = "SELECT p.*, a.name as author_name FROM pages p, users a WHERE a.id = p.author";
+    const sql =
+      "SELECT p.*, a.name as author_name FROM pages p, users a WHERE a.id = p.author";
     db.all(sql, [], (err, rows) => {
       if (err) {
-        reject(err);
+        reject(prettifyUnexpectedError(err));
         return;
       }
       const pages = rows.map((row) => ({
@@ -147,12 +149,14 @@ const createPage = (page, blocks) => {
     ) {
       reject({
         error: "Not a valid publish date.",
+        details: "Must be a valid Date or a Draft",
         code: 400,
       });
     }
     if (!Array.isArray(blocks)) {
       reject({
-        error: "blocks field is not an array.",
+        error: "Invalid Request",
+        details: "blocks must be an array",
         extra: blocks,
         code: 400,
       });
@@ -165,8 +169,9 @@ const createPage = (page, blocks) => {
       )
     ) {
       reject({
-        error:
-          "blocks field does not contain the minimum blocks required (at least one header and something else).",
+        error: "Invalid Request",
+        details:
+          "blocks do not meat the constraint: at least one header and something else.",
         extra: blocks,
         code: 400,
       });
@@ -182,12 +187,15 @@ const createPage = (page, blocks) => {
       [page.title, page.published_at, page.author, dayjs().toISOString()],
       function (err) {
         if (err) {
-          reject(err);
+          reject(prettifyUnexpectedError(err));
           return;
         }
-        blocks = blocks.sort((a, b) => a.order - b.order).map((b) => ({...b, page_id: this.lastID}));
-        const blocks_insert_promises = blocks.map((block, index) =>
-          appendBlock(this.lastID, { ...block, order: index + 1 }) // to make sure there are no gaps in the order
+        blocks = blocks
+          .sort((a, b) => a.order - b.order)
+          .map((b) => ({ ...b, page_id: this.lastID }));
+        const blocks_insert_promises = blocks.map(
+          (block, index) =>
+            appendBlock(this.lastID, { ...block, order: index + 1 }) // to make sure there are no gaps in the order
         );
         Promise.all(blocks_insert_promises)
           .then((blocks) => {
@@ -212,7 +220,7 @@ const deletePage = (id) => {
     const sql = "DELETE FROM pages WHERE id = ?";
     db.run(sql, [id], function (err) {
       if (err) {
-        reject(err);
+        reject(prettifyUnexpectedError(err));
         return;
       }
       deleteAllBlocksOfPage(id)
@@ -241,17 +249,23 @@ const updatePage = (page) => {
     ) {
       reject({
         error: "Not a valid publish date.",
+        details: "Must be a valid Date or a Draft",
         code: 400,
       });
     }
     page.published_at = page.published_at
       ? dayjs(page.published_at).toISOString()
       : null;
-    const sql = "UPDATE pages SET title = ?, published_at = ?, author = ? WHERE id = ?";
-    db.run(sql, [page.title, page.published_at, page.author, page.id], function (err) {
-      if (err) reject(err);
-      else resolve(page);
-    });
+    const sql =
+      "UPDATE pages SET title = ?, published_at = ?, author = ? WHERE id = ?";
+    db.run(
+      sql,
+      [page.title, page.published_at, page.author, page.id],
+      function (err) {
+        if (err) reject(prettifyUnexpectedError(err));
+        else resolve(page);
+      }
+    );
   });
 };
 
@@ -265,7 +279,7 @@ const getBlocks = (pageId) => {
     const sql = "SELECT * FROM blocks WHERE page_id = ? ORDER BY `order` ASC";
     db.all(sql, [pageId], (err, rows) => {
       if (err) {
-        reject(err);
+        reject(prettifyUnexpectedError(err));
         return;
       }
       const blocks = rows.map((row) => ({
@@ -295,8 +309,8 @@ const appendBlock = (pageId, block) => {
       sql,
       [pageId, block.type, block.content, block.order],
       function (err) {
-        if (err) reject(err);
-        else resolve({ id: this.lastID, ...block });
+        if (err) reject(prettifyUnexpectedError(err));
+        else resolve({ ...block, id: this.lastID, page_id: pageId });
       }
     );
   });
@@ -306,7 +320,7 @@ const deleteAllBlocksOfPage = (pageId) => {
   return new Promise((resolve, reject) => {
     const sql = "DELETE FROM blocks WHERE page_id = ?";
     db.run(sql, [pageId], function (err) {
-      if (err) reject(err);
+      if (err) reject(prettifyUnexpectedError(err));
       else resolve(null);
     });
   });
@@ -320,13 +334,16 @@ const deleteAllBlocksOfPage = (pageId) => {
 const deleteBlock = (pageId, blockId) => {
   return new Promise((resolve, reject) => {
     getPageById(pageId).then((page) => {
-      const bc = pageBlocksCount(page.blocks);
       const block = page.blocks.find((b) => b.id === blockId);
       if (block === undefined) {
-        reject({ error: `Block ${blockId} not found in page ${pageId}.`, code: 404 });
+        reject({
+          error: "Block not found.",
+          error: `Trying to delete a block not found in current page.`,
+          code: 400,
+        });
         return;
       }
-      
+
       const sql = "DELETE FROM blocks WHERE id = ?";
       db.run(sql, [block.id], function (err) {
         if (err) reject(err);
@@ -347,7 +364,7 @@ const updateBlock = (pageId, blockId, block) => {
       .then((page) => {
         const oldBlock = page.blocks.find((b) => b.id === blockId);
         if (oldBlock === undefined) {
-          reject({ error: "Block not found.", code: 404 });
+          reject({ error: "Block not found.", details: "Trying to update a block not in page", code: 400 });
           return;
         }
         // If are equals skip the update
@@ -365,7 +382,7 @@ const updateBlock = (pageId, blockId, block) => {
           sql,
           [block.type, block.content, block.order, block.id],
           function (err) {
-            if (err) reject(err);
+            if (err) reject(prettifyUnexpectedError(err));
             else resolve(block);
           }
         );
@@ -415,7 +432,7 @@ const updateBlocks = (page_id, newBlocks) => {
     const deletePromises = page.blocks
       .filter((b) => !newBlocks.some((nb) => nb.id === b.id))
       .map((b) => deleteBlock(page_id, b.id));
-    
+
     // Add new blocks
     const addPromises = newBlocks
       .filter((nb) => !page.blocks.some((b) => b.id === nb.id))
