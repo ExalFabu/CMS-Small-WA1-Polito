@@ -7,8 +7,6 @@ CMSmall - AW1 Exam Project by Alexandro Buffa - s316999
 
 ### Todo
 
-- [ ] Define DB as required  
-- [ ] Update README.md  
 - [ ] remove edit from eslintrc and check erros (probably should add jsdoc to props)  
 
 ### In Progress
@@ -17,5 +15,7 @@ CMSmall - AW1 Exam Project by Alexandro Buffa - s316999
 
 ### Done ✓
 
+- [x] Update README.md  
+- [x] Define DB as required  
 - [x] Fix page useless re-render  
 
