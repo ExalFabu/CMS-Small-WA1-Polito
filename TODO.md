@@ -7,10 +7,10 @@ CMSmall - AW1 Exam Project by Alexandro Buffa - s316999
 
 ### Todo
 
-- [ ] remove edit from eslintrc and check erros (probably should add jsdoc to props)  
 
 ### In Progress
 
+- [ ] remove edit from eslintrc and check erros (probably should add jsdoc to props)  
 - [ ] Check API Error messages  
 
 ### Done ✓

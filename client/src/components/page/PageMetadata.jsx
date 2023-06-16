@@ -17,8 +17,11 @@ import {
 } from "react-bootstrap";
 import { getEditors } from "../../api/meta";
 import { PubishedLabel } from "../PageCard";
+import pagesApi from "../../api/pages";
+import { useNavigate } from "react-router-dom";
+import DeleteButton from "../DeleteButton";
 
-const EditModePageMetadata = ({ page, isAdmin, user, saveEditedPageMetadata, cancelEdit }) => {
+const EditModePageMetadata = ({ page, isAdmin, user, saveEditedPageMetadata, cancelEdit, deletePage }) => {
   const [editedPage, setEditedPage] = useState(page);
   useEffect(() => {
     setEditedPage(page);
@@ -130,6 +133,8 @@ const EditModePageMetadata = ({ page, isAdmin, user, saveEditedPageMetadata, can
             <Button size="sm" variant="outline-secondary" onClick={cancelEdit}>
               <FontAwesomeIcon icon={faCancel} />
             </Button>
+            <div className="hr border"></div>
+            <DeleteButton onClick={deletePage} popoverText={`Click twice to delete the current Page`}/>
           </Stack>
         </Col>
       </Row>
@@ -137,7 +142,7 @@ const EditModePageMetadata = ({ page, isAdmin, user, saveEditedPageMetadata, can
   );
 };
 
-const ViewModePageMetadata = ({ page, setEditMode, editable }) => {
+const ViewModePageMetadata = ({ page, setEditMode, editable, deletePage }) => {
 
   return (
     <Container className="">
@@ -154,6 +159,8 @@ const ViewModePageMetadata = ({ page, setEditMode, editable }) => {
             <Button size="sm" variant="outline-primary" onClick={setEditMode}>
               <FontAwesomeIcon icon={faPenToSquare} />
             </Button>
+            <div className="hr border"></div>
+            <DeleteButton onClick={deletePage} popoverText={`Click twice to delete the current Page`}/>
           </Col>
         ) : (
           <></>
@@ -163,13 +170,23 @@ const ViewModePageMetadata = ({ page, setEditMode, editable }) => {
   );
 };
 
-const PageMetadata = ({ page, editable, isAdmin, user, saveEditedPageMetadata }) => {
+const PageMetadata = ({ page, editable, isAdmin, user, saveEditedPageMetadata, setError }) => {
   const [editMode, setEditMode] = useState(false);
 
   const saveWrapper = (editedPage) => {
     saveEditedPageMetadata(editedPage);
     setEditMode(false);
   };
+
+  const navigator = useNavigate();
+  const deletePage = () => {
+    pagesApi.deletePage(page.id).then(() => {
+      navigator("/");
+    }).catch((err) => {
+      console.error(err);
+      setError(err);
+    });
+  }
 
   if (editMode) {
     return (
@@ -179,6 +196,7 @@ const PageMetadata = ({ page, editable, isAdmin, user, saveEditedPageMetadata })
         user={user}
         saveEditedPageMetadata={saveWrapper}
         cancelEdit={() => setEditMode(false)}
+        deletePage={deletePage}
       />
     );
   } else {
@@ -187,6 +205,7 @@ const PageMetadata = ({ page, editable, isAdmin, user, saveEditedPageMetadata })
         page={page}
         editable={editable}
         setEditMode={() => setEditMode(true)}
+        deletePage={deletePage}
       />
     );
   }

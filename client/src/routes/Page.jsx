@@ -106,6 +106,7 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
           isAdmin={user && user.role === "admin"}
           user={user}
           saveEditedPageMetadata={saveEditedPageMetadata}
+          setError={setSaveError}
         />
       </div>
       {editedBlocks.map((block, idx) => (
@@ -129,7 +130,7 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
                   type: "paragraph",
                   content: "Empty Paragraph",
                   page_id: page.id,
-                  id: dayjs().unix(),
+                  id: dayjs().valueOf() // Locally generated id, to be replaced by the server on page create/update
                 })
               }
               variant="primary"

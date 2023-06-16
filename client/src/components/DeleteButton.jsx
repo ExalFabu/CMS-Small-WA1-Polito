@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useCallback, useState } from "react";
 import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 
-const DeleteButton = ({ onClick, label, ...props }) => {
+const DeleteButton = ({ onClick, label, popoverText, ...props }) => {
     const [isClickedOnce, setIsClickedOnce] = useState(false);
     const handleClick = useCallback((e) => {
         e.stopPropagation();
@@ -23,7 +23,7 @@ const DeleteButton = ({ onClick, label, ...props }) => {
             placement={"auto-end"}
             overlay={
                 <Tooltip id={`tooltip-to-confirm-delete`}>
-                    Click twice to confirm the delete. ({isClickedOnce ? "1" : "0"} /2)
+                    {popoverText ?? `Click twice to confirm the delete.`} ({isClickedOnce ? "1" : "0"} /2)
                 </Tooltip>
             }
         >
