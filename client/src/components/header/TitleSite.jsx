@@ -14,6 +14,7 @@ import {
   faCancel,
 } from "@fortawesome/free-solid-svg-icons";
 import api from "../../api/meta";
+import PropTypes from 'prop-types';
 
 const TitleSite = ({ user, forcedFrontOffice }) => {
   const [siteName, setSiteName] = useState("");
@@ -79,6 +80,13 @@ const TitleSite = ({ user, forcedFrontOffice }) => {
       </Col>
     </Row>
   );
+};
+
+TitleSite.propTypes = {
+  user: {
+    role: PropTypes.string,
+  },
+  forcedFrontOffice: PropTypes.bool,
 };
 
 export default TitleSite;

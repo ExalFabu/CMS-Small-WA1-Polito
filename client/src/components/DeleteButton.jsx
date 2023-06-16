@@ -2,6 +2,7 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useCallback, useState } from "react";
 import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
+import PropTypes from 'prop-types';
 
 const DeleteButton = ({ onClick, label, popoverText, ...props }) => {
     const [isClickedOnce, setIsClickedOnce] = useState(false);
@@ -33,5 +34,11 @@ const DeleteButton = ({ onClick, label, popoverText, ...props }) => {
         </OverlayTrigger>
     );
 }
+
+DeleteButton.propTypes = {
+    onClick: PropTypes.func.isRequired,
+    label: PropTypes.string,
+    popoverText: PropTypes.string,
+};
 
 export default DeleteButton;

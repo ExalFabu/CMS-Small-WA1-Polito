@@ -10,6 +10,7 @@ import {
   faArrowLeft,
   faHouseChimney,
 } from "@fortawesome/free-solid-svg-icons";
+import PropTypes from 'prop-types';
 
 import { logout } from "../../api/auth";
 
@@ -77,6 +78,16 @@ const Header = ({ user, logout: stateLogout, forcedFrontOffice, setFFO }) => {
       <Outlet />
     </>
   );
+};
+
+Header.propTypes = {
+  user: {
+    name: PropTypes.string,
+    role: PropTypes.string,
+  },
+  logout: PropTypes.func.isRequired,
+  forcedFrontOffice: PropTypes.bool,
+  setFFO: PropTypes.func.isRequired
 };
 
 export default Header;

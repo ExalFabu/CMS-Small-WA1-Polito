@@ -11,6 +11,7 @@ import {
 import { getImages } from "../../api/meta";
 import { URL_IMAGES } from "../../api";
 import DeleteButton from "../DeleteButton";
+import PropTypes from 'prop-types';
 
 const HeaderBlock = ({ block }) => {
   return <h2>{block.content}</h2>;
@@ -24,6 +25,12 @@ const ImageBlock = ({ block }) => {
   return <Image style={{ maxHeight: "400px" }} src={`${URL_IMAGES}/${block.content}`} rounded fluid />;
 };
 
+ImageBlock.propTypes = HeaderBlock.propTypes = ParagraphBlock.propTypes = {
+  block: PropTypes.shape({
+    content: PropTypes.string.isRequired,
+  }).isRequired,
+};
+
 const ViewBlock = ({ block }) => {
   switch (block.type) {
     case "header":
@@ -35,6 +42,13 @@ const ViewBlock = ({ block }) => {
     default:
       return <div>Unknown block type</div>;
   }
+};
+
+ViewBlock.propTypes = {
+  block: PropTypes.shape({
+    type: PropTypes.oneOf(["header", "paragraph", "image"]).isRequired,
+    content: PropTypes.string.isRequired,
+  }).isRequired,
 };
 
 const EditableBlock = ({ block, setBlock, images, formSubmit }) => {
@@ -86,6 +100,19 @@ const EditableBlock = ({ block, setBlock, images, formSubmit }) => {
   );
 };
 
+EditableBlock.propTypes = {
+  block: PropTypes.shape({
+    type: PropTypes.oneOf(["header", "paragraph", "image"]).isRequired,
+    content: PropTypes.string.isRequired,
+  }).isRequired,
+  setBlock: PropTypes.func.isRequired,
+  images: PropTypes.arrayOf(PropTypes.shape({
+    path: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+  })).isRequired,
+  formSubmit: PropTypes.func.isRequired,
+};
+
 const Block = ({ block, editable, setBlock, isFirst, isLast }) => {
   const [localBlock, setLocalBlock] = useState(block);
   const [isEditing, setIsEditing] = useState(false);
@@ -119,7 +146,7 @@ const Block = ({ block, editable, setBlock, isFirst, isLast }) => {
       return selectableImages.find((it) => it.path === localBlock.content) !== undefined;
     }
     return !!localBlock.content.trim();
-  }, [localBlock]);
+  }, [localBlock, selectableImages]);
 
   return (
     <Container style={editable ? { borderTop: "dashed 1px gray" } : {}}>
@@ -195,6 +222,19 @@ const Block = ({ block, editable, setBlock, isFirst, isLast }) => {
       </Row>
     </Container>
   );
+};
+
+Block.propTypes = {
+  block: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    type: PropTypes.oneOf(["header", "paragraph", "image"]).isRequired,
+    content: PropTypes.string.isRequired,
+    order: PropTypes.number.isRequired,
+  }).isRequired,
+  editable: PropTypes.bool.isRequired,
+  setBlock: PropTypes.func.isRequired,
+  isFirst: PropTypes.bool.isRequired,
+  isLast: PropTypes.bool.isRequired,
 };
 
 export default Block;

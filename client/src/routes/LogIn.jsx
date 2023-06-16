@@ -2,6 +2,8 @@ import { Form, Button, Alert, Container, Row, Col } from "react-bootstrap";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../api/auth";
+import PropTypes from 'prop-types';
+
 
 function LoginForm(props) {
   const [username, setUsername] = useState("buffa@test.com");
@@ -91,5 +93,9 @@ function LoginForm(props) {
     </Container>
   );
 }
+
+LoginForm.propTypes = {
+  login: PropTypes.func.isRequired,
+};
 
 export default LoginForm;

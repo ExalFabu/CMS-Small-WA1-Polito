@@ -6,6 +6,8 @@ import { createPage, updatePage } from "../api/pages";
 import PageMetadata from "../components/page/PageMetadata";
 import ErrorHandler from "../components/ErrorHandler";
 import dayjs from "dayjs";
+import PropTypes from 'prop-types';
+
 
 const deepCopy = (obj) => {
   return JSON.parse(JSON.stringify(obj));
@@ -26,7 +28,7 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
     setEditedBlocks(deepCopy(page.blocks));
     console.log("Page from useLoaderData changed")
     setPageHasBeenEdited(false);
-  }, [page, JSON.stringify(page.blocks)])
+  }, [page, JSON.stringify(page.blocks)]) // eslint-disable-line react-hooks/exhaustive-deps
 
 
 
@@ -154,5 +156,11 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
     </div>
   );
 };
+
+Page.propTypes = {
+  user: PropTypes.object.isRequired,
+  isNew: PropTypes.bool.isRequired,
+  forcedFrontOffice: PropTypes.bool.isRequired
+}
 
 export default Page;

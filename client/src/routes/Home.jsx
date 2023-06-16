@@ -3,6 +3,8 @@ import React, { useEffect, useMemo } from "react";
 import { Button, Container } from "react-bootstrap";
 import { useLoaderData, useNavigate } from "react-router-dom";
 import PageCard from "../components/PageCard";
+import PropTypes from 'prop-types';
+
 
 const pageIsPublished = (page) => dayjs(page.published_at).isBefore(dayjs());
 
@@ -41,6 +43,13 @@ const Home = ({ user, forcedFrontOffice}) => {
       )}
     </div>
   );
+};
+
+Home.propTypes = {
+  user: {
+    role: PropTypes.string,
+  },
+  forcedFrontOffice: PropTypes.bool,
 };
 
 export default Home;

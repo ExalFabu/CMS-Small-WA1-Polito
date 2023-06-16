@@ -1,7 +1,6 @@
-import { faClose } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Alert, Button, Container } from "react-bootstrap";
 import { useNavigate, useRouteError } from "react-router-dom";
+import PropTypes from 'prop-types';
 
 const ErrorHandler = ({ error: errorObject, closeError }) => {
     console.log(errorObject)
@@ -38,5 +37,16 @@ const ErrorHandler = ({ error: errorObject, closeError }) => {
     </>
     );
 }
+
+ErrorHandler.propTypes = {
+    error: PropTypes.shape({
+        error: PropTypes.string,
+        details: PropTypes.shape({ // Might be a nested error
+            error: PropTypes.string,
+            details: PropTypes.string
+        })
+    }),
+    closeError: PropTypes.func.isRequired
+};
 
 export default ErrorHandler;

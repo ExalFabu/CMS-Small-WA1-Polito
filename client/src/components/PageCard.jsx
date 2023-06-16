@@ -4,6 +4,7 @@ import { useNavigate, useRevalidator } from "react-router-dom";
 import dayjs from "dayjs";
 import pagesApi from "../api/pages";
 import DeleteButton from "./DeleteButton";
+import PropTypes from 'prop-types';
 
 export const PubishedLabel = ({date}) => {
   const publishedDate = dayjs(date);
@@ -12,6 +13,10 @@ export const PubishedLabel = ({date}) => {
     return <Stack className="text-muted" direction="vertical"><span>{publishedDate.format("DD/MM/YYYY")}</span><span>(scheduled)</span></Stack>;
   return <span className="text-muted">{publishedDate.format("DD/MM/YYYY")}</span>;
 }
+
+PubishedLabel.propTypes = {
+  date: PropTypes.string.isRequired
+};
 
 const PageCard = ({ page, user, forcedFrontOffice }) => {
   const { revalidate } = useRevalidator();
@@ -76,6 +81,21 @@ const PageCard = ({ page, user, forcedFrontOffice }) => {
       </Card>
     </>
   );
+};
+
+PageCard.propTypes = {
+  page: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    author: PropTypes.number.isRequired,
+    author_name: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    published_at: PropTypes.string,
+  }),
+  user: PropTypes.shape({
+    id: PropTypes.number,
+    role: PropTypes.string,
+  }),
+  forcedFrontOffice: PropTypes.bool
 };
 
 export default PageCard;

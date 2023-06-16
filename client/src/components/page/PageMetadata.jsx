@@ -20,6 +20,7 @@ import { PubishedLabel } from "../PageCard";
 import pagesApi from "../../api/pages";
 import { useNavigate } from "react-router-dom";
 import DeleteButton from "../DeleteButton";
+import PropTypes from 'prop-types';
 
 const EditModePageMetadata = ({ page, isAdmin, user, saveEditedPageMetadata, cancelEdit, deletePage }) => {
   const [editedPage, setEditedPage] = useState(page);
@@ -37,7 +38,7 @@ const EditModePageMetadata = ({ page, isAdmin, user, saveEditedPageMetadata, can
     else {
       setEditors([{ name: page.author_name, id: page.author }]);
     }
-  }, [isAdmin, page.author, page.author_name]);
+  }, [isAdmin, page.author, page.author_name, user.id, user.name]);
 
   const [pageHasChanged, setPageHasChanged] = useState(false);
 
@@ -142,6 +143,25 @@ const EditModePageMetadata = ({ page, isAdmin, user, saveEditedPageMetadata, can
   );
 };
 
+EditModePageMetadata.propTypes = {
+  page: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    author: PropTypes.number.isRequired,
+    author_name: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    published_at: PropTypes.string,
+    created_at: PropTypes.string
+  }),
+  isAdmin: PropTypes.bool.isRequired,
+  user: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+  }),
+  saveEditedPageMetadata: PropTypes.func.isRequired,
+  cancelEdit: PropTypes.func.isRequired,
+  deletePage: PropTypes.func.isRequired
+};
+
 const ViewModePageMetadata = ({ page, setEditMode, editable, deletePage }) => {
 
   return (
@@ -168,6 +188,20 @@ const ViewModePageMetadata = ({ page, setEditMode, editable, deletePage }) => {
       </Row>
     </Container>
   );
+};
+
+ViewModePageMetadata.propTypes = {
+  page: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    author: PropTypes.number.isRequired,
+    author_name: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    published_at: PropTypes.string,
+    created_at: PropTypes.string
+  }),
+  editable: PropTypes.bool.isRequired,
+  setEditMode: PropTypes.func.isRequired,
+  deletePage: PropTypes.func.isRequired
 };
 
 const PageMetadata = ({ page, editable, isAdmin, user, saveEditedPageMetadata, setError }) => {
@@ -209,6 +243,25 @@ const PageMetadata = ({ page, editable, isAdmin, user, saveEditedPageMetadata, s
       />
     );
   }
+};
+
+PageMetadata.propTypes= {
+  page: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    author: PropTypes.number.isRequired,
+    author_name: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    published_at: PropTypes.string,
+    created_at: PropTypes.string
+  }),
+  editable: PropTypes.bool.isRequired,
+  isAdmin: PropTypes.bool.isRequired,
+  user: PropTypes.shape({
+    id: PropTypes.number,
+    name: PropTypes.string,
+  }),
+  saveEditedPageMetadata: PropTypes.func.isRequired,
+  setError: PropTypes.func.isRequired
 };
 
 export default React.memo(PageMetadata);
