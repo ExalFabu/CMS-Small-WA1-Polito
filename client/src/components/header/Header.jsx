@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Button, ButtonGroup, Navbar } from "react-bootstrap";
-import { Link, Outlet, useNavigate, useRevalidator } from "react-router-dom";
+import { Link, Outlet, useNavigate, useRevalidator, useSearchParams } from "react-router-dom";
 import TitleSite from "./TitleSite";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -14,7 +14,28 @@ import PropTypes from 'prop-types';
 
 import { logout } from "../../api/auth";
 
-const Header = ({ user, logout: stateLogout, forcedFrontOffice, setFFO }) => {
+export const isFrontOfficeViewWrapper = (searchParam, user) => {
+  return searchParam.get("mode") === "frontoffice" && user && (user.role === "admin" || user.role === "editor");
+};
+
+const Header = ({ user, logout: stateLogout }) => {
+
+  const [searchParam, setSearchParam] = useSearchParams();
+
+  const enabledBackOffice = useMemo(() => (user && (user.role === "admin" || user.role === "editor")), [user]);
+
+  const isFrontOfficeView = useMemo(() => {
+    return isFrontOfficeViewWrapper(searchParam, user);
+  }, [searchParam, enabledBackOffice]);
+
+  const setViewMode = (mode) => {
+    if (!enabledBackOffice) {
+      mode = "frontoffice";
+    }
+    setSearchParam((otherParams) => ({ ...Object.fromEntries(otherParams.entries()), mode }));
+  };
+
+
   const doLogout = () => {
     logout().then(() => stateLogout());
   };
@@ -24,7 +45,6 @@ const Header = ({ user, logout: stateLogout, forcedFrontOffice, setFFO }) => {
   const goBack = () => navigator(-1);
   const reload = () => revalidate();
 
-  const enabledBackOffice = useMemo(() => (user && (user.role === "admin" || user.role === "editor")), [user]);
 
 
   return (
@@ -44,24 +64,24 @@ const Header = ({ user, logout: stateLogout, forcedFrontOffice, setFFO }) => {
           <Button
             size="sm"
             variant="outline-primary"
-            active={forcedFrontOffice}
-            onClick={() => setFFO(true)}
+            active={isFrontOfficeView}
+            onClick={() => setViewMode("frontoffice")}
           >
             Front Office
           </Button>
           <Button
             size="sm"
             variant="outline-primary"
-            active={!forcedFrontOffice}
-            onClick={() => setFFO(false)}
+            active={!isFrontOfficeView}
+            onClick={() => setViewMode("backoffice")}
           >
             Back Office
           </Button>
-          </ButtonGroup>
-          }
+        </ButtonGroup>
+        }
 
 
-        <TitleSite user={user} forcedFrontOffice={forcedFrontOffice} />
+        <TitleSite user={user} />
         <Navbar.Brand className="me-0">
           {user ? <span className="me-2"> Hi {user.name}! </span> : <></>}
           {user ? (
@@ -86,8 +106,6 @@ Header.propTypes = {
     role: PropTypes.string,
   }),
   logout: PropTypes.func.isRequired,
-  forcedFrontOffice: PropTypes.bool,
-  setFFO: PropTypes.func.isRequired
 };
 
 export default React.memo(Header);

@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Container, Navbar, Spinner } from "react-bootstrap";
-import { useLoaderData, useNavigate, useRevalidator } from "react-router-dom";
+import { useLoaderData, useNavigate, useRevalidator, useSearchParams } from "react-router-dom";
 import Block from "../components/page/Block";
 import { createPage, updatePage } from "../api/pages";
 import PageMetadata from "../components/page/PageMetadata";
 import ErrorHandler from "../components/ErrorHandler";
 import dayjs from "dayjs";
 import PropTypes from 'prop-types';
+import { isFrontOfficeViewWrapper } from "../components/header/Header";
 
 
 const deepCopy = (obj) => {
@@ -14,9 +15,14 @@ const deepCopy = (obj) => {
 }
 
 
-const Page = ({ user, isNew = false, forcedFrontOffice }) => {
+const Page = ({ user, isNew = false }) => {
   const { state: revalidatorState, revalidate } = useRevalidator();
   const page = useLoaderData();
+  const [searchParams] = useSearchParams();
+
+  const forcedFrontOffice = useMemo(() => {
+    return isFrontOfficeViewWrapper(searchParams, user);
+  }, [searchParams, user]);
 
   const navigate = useNavigate()
   const [editedPage, setEditedPage] = useState(deepCopy({ ...page, blocks: [] })); // Blocks are not needed in this object
@@ -161,7 +167,6 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
 Page.propTypes = {
   user: PropTypes.object,
   isNew: PropTypes.bool,
-  forcedFrontOffice: PropTypes.bool.isRequired
 }
 
 export default React.memo(Page);

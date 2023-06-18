@@ -15,9 +15,16 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import api from "../../api/meta";
 import PropTypes from 'prop-types';
+import { useSearchParams } from "react-router-dom";
+import { isFrontOfficeViewWrapper } from "./Header";
 
-const TitleSite = ({ user, forcedFrontOffice }) => {
+const TitleSite = ({ user }) => {
   const [siteName, setSiteName] = useState("");
+  const [searchParam] = useSearchParams();
+
+  const forcedFrontOffice = useMemo(() => {
+    return isFrontOfficeViewWrapper(searchParam, user);
+  }, [searchParam, user]);
   useEffect(() => {
     api.getSiteName().then((siteName) => setSiteName(siteName));
   }, []);
@@ -85,8 +92,7 @@ const TitleSite = ({ user, forcedFrontOffice }) => {
 TitleSite.propTypes = {
   user: PropTypes.shape({
     role: PropTypes.string,
-  }),
-  forcedFrontOffice: PropTypes.bool,
+  })
 };
 
 export default TitleSite;

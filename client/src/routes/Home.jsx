@@ -4,8 +4,7 @@ import { Button, Col, Container, FloatingLabel, Form, InputGroup, Row } from "re
 import { useLoaderData, useNavigate, useSearchParams } from "react-router-dom";
 import PageCard from "../components/PageCard";
 import PropTypes from 'prop-types';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { isFrontOfficeViewWrapper } from '../components/header/Header'
 
 const pageIsPublished = (page) => dayjs(page.published_at).isBefore(dayjs());
 
@@ -36,7 +35,7 @@ const FilterTopBar = ({ isBackOffice }) => {
 
 
   useEffect(() => {
-    setSearchParam({ name: searchName, filter: filterRadio, sort: sortsRadio });
+    setSearchParam((otherParams) => ({ ...(Object.fromEntries(otherParams.entries())), name: searchName, filter: filterRadio, sort: sortsRadio }));
   }, [filterRadio, searchName, sortsRadio]); // To trigger the effect whenever the params change
 
   const handleSubmit = useCallback((event) => {
@@ -110,6 +109,10 @@ const FilterTopBar = ({ isBackOffice }) => {
   </Form>
 };
 
+FilterTopBar.propTypes = {
+  isBackOffice: PropTypes.bool
+};
+
 const applyFiltersNSorts = (pages, filter, sort, name, user_id) => {
   pages = pages.filter((page) => name == "" || page.title.toLowerCase().includes(name.toLowerCase()));
   const sorted = pages.sort(SORTS[sort].callback);
@@ -117,53 +120,57 @@ const applyFiltersNSorts = (pages, filter, sort, name, user_id) => {
 }
 
 
-const Home = ({ user, forcedFrontOffice }) => {
+const Home = ({ user }) => {
   const pages = useLoaderData();
   const [filteredPages, setFilteredPages] = React.useState(pages);
   const [searchParam] = useSearchParams();
 
-  const canCreatePage = useMemo(() => (user && (user.role === "admin" || user.role === "editor") && !forcedFrontOffice), [user, forcedFrontOffice])
+  const forcedFrontOffice = useMemo(() => { 
+    return isFrontOfficeViewWrapper(searchParam, user);
+  }, [searchParam, user]);
 
-  useEffect(() => {
-    const name = searchParam.get("name") || "";
-    const filter = searchParam.get("filter") || "all";
-    const sorts = searchParam.get("sort") || "oldest";
-    const appliedFilters = applyFiltersNSorts(pages, filter, sorts, name, user?.id);
-    console.log("Pages in Home changed", appliedFilters, name, filter)
 
-    if (forcedFrontOffice) {
-      setFilteredPages(appliedFilters.filter(pageIsPublished));
-    } else {
-      setFilteredPages(appliedFilters);
-    }
-  }, [forcedFrontOffice, pages, searchParam, user]);
+    const canCreatePage = useMemo(() => (user && (user.role === "admin" || user.role === "editor") && !forcedFrontOffice), [user, forcedFrontOffice])
 
-  const navigator = useNavigate();
+    useEffect(() => {
+      const name = searchParam.get("name") || "";
+      const filter = searchParam.get("filter") || "all";
+      const sorts = searchParam.get("sort") || "oldest";
+      const appliedFilters = applyFiltersNSorts(pages, filter, sorts, name, user?.id);
+      console.log("Pages in Home changed", appliedFilters, name, filter)
 
-  return (
-    <div className="w-75 mx-auto">
-      <FilterTopBar isBackOffice={canCreatePage} /> {/*Same criteria */}
-      <Container className="d-flex flex-wrap align-items-center justify-content-evenly ">
-        {filteredPages.map((page) => {
-          return <PageCard key={page.id} page={page} user={user} forcedFrontOffice={forcedFrontOffice} />;
-        })}
-      </Container>
-      {canCreatePage ? (
-        <Container className="my-5 d-flex justify-content-center">
-          <Button variant="primary" onClick={() => navigator("/page/new")}>Crea una nuova Pagina</Button>
+      if (forcedFrontOffice) {
+        setFilteredPages(appliedFilters.filter(pageIsPublished));
+      } else {
+        setFilteredPages(appliedFilters);
+      }
+    }, [forcedFrontOffice, pages, searchParam, user]);
+
+    const navigator = useNavigate();
+
+    return (
+      <div className="w-75 mx-auto">
+        <FilterTopBar isBackOffice={canCreatePage} /> {/*Same criteria */}
+        <Container className="d-flex flex-wrap align-items-center justify-content-evenly ">
+          {filteredPages.map((page) => {
+            return <PageCard key={page.id} page={page} user={user} forcedFrontOffice={forcedFrontOffice} />;
+          })}
         </Container>
-      ) : (
-        <></>
-      )}
-    </div>
-  );
-};
+        {canCreatePage ? (
+          <Container className="my-5 d-flex justify-content-center">
+            <Button variant="primary" onClick={() => navigator("/page/new")}>Crea una nuova Pagina</Button>
+          </Container>
+        ) : (
+          <></>
+        )}
+      </div>
+    );
+  };
 
-Home.propTypes = {
-  user: PropTypes.shape({
-    role: PropTypes.string,
-  }),
-  forcedFrontOffice: PropTypes.bool,
-};
+  Home.propTypes = {
+    user: PropTypes.shape({
+      role: PropTypes.string,
+    })
+  };
 
-export default Home;
+  export default Home;
