@@ -48,15 +48,17 @@ const EditModePageMetadata = ({ page, isAdmin, user, saveEditedPageMetadata, can
     setEditedPage((currEditedPage) => ({ ...currEditedPage, author: editor_id, author_name: editor_name }));
   }
 
-  const save = () => {
+  const save = (e) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     saveEditedPageMetadata(editedPage);
   };
 
   return (
-    <Container className="">
+    <Container as={Form} onSubmit={save} className="">
       <Row className="align-content-center align-items-center">
         <Col>
-          <FloatingLabel label="Autore">
+          <FloatingLabel label="Author">
             <Form.Select
               type="text"
               value={editedPage.author}
@@ -75,7 +77,7 @@ const EditModePageMetadata = ({ page, isAdmin, user, saveEditedPageMetadata, can
           </FloatingLabel>
         </Col>
         <Col>
-          <FloatingLabel label="Titolo">
+          <FloatingLabel label="Title">
             <Form.Control
               type="text"
               value={editedPage.title}
@@ -88,7 +90,7 @@ const EditModePageMetadata = ({ page, isAdmin, user, saveEditedPageMetadata, can
         </Col>
         <Col>
           <FloatingLabel
-            label="Data di Pubblicazione"
+            label="Publish Date"
             disabled={editedPage.published_at === null}
           >
             <Form.Control

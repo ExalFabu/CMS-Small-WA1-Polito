@@ -57,7 +57,7 @@ const EditableBlock = ({ block, setBlock, images, formSubmit }) => {
   return (
     <Form className="my-2" onSubmit={formSubmit}>
       <Form.Group>
-        <Form.Label>Tipo</Form.Label>
+        <Form.Label>Type</Form.Label>
         <Form.Select
           value={block.type}
           onChange={(ev) => setBlock({ ...block, type: ev.target.value })}
@@ -68,7 +68,7 @@ const EditableBlock = ({ block, setBlock, images, formSubmit }) => {
         </Form.Select>
       </Form.Group>
       <Form.Group>
-        <Form.Label>Contenuto</Form.Label>
+        <Form.Label>Content</Form.Label>
         {block.type === "image" ? (<>
           <Form.Select
             value={block.content}
