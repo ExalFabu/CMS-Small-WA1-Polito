@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.js",
-    "dev-swagger": "nodemon --ignore swagger_output.json swagger.js"
+    "dev-swagger": "nodemon --ignore swagger_output.json swagger.js",
+    "lint": "eslint \"./**/*.js\" --ext js --report-unused-disable-directives --max-warnings 0"
   },
   "author": "",
   "license": "ISC",
@@ -22,6 +23,7 @@
     "sqlite3": "^5.1.6"
   },
   "devDependencies": {
+    "eslint": "^8.43.0",
     "nodemon": "^2.0.22",
     "swagger-autogen": "^2.23.1",
     "swagger-ui-express": "^4.6.3"

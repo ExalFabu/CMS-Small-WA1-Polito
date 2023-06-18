@@ -1,7 +1,7 @@
-const authMiddleware = require('./auth');
-const {check, checkSchema} = require('express-validator');
+const authMiddleware = require("./auth");
+const { check } = require("express-validator");
 
 module.exports = {
-    ...authMiddleware,
-    check
+  ...authMiddleware,
+  check,
 };

@@ -2,6 +2,8 @@
 const db = require("./db");
 const dayjs = require("dayjs");
 
+const { prettifyUnexpectedError } = require("./utils");
+
 const filters = {
   all: () => true,
   draft: (page) =>
@@ -341,7 +343,6 @@ const deleteBlock = (pageId, blockId) => {
       const block = page.blocks.find((b) => b.id === blockId);
       if (block === undefined) {
         reject({
-          error: "Block not found.",
           error: `Trying to delete a block not found in current page.`,
           code: 400,
         });
@@ -368,7 +369,11 @@ const updateBlock = (pageId, blockId, block) => {
       .then((page) => {
         const oldBlock = page.blocks.find((b) => b.id === blockId);
         if (oldBlock === undefined) {
-          reject({ error: "Block not found.", details: "Trying to update a block not in page", code: 400 });
+          reject({
+            error: "Block not found.",
+            details: "Trying to update a block not in page",
+            code: 400,
+          });
           return;
         }
         // If are equals skip the update
@@ -403,7 +408,7 @@ const updateBlock = (pageId, blockId, block) => {
  * @returns {Promise<Block[]|Error>}
  */
 const updateBlocks = (page_id, newBlocks) => {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     if (
       !Array.isArray(newBlocks) ||
       newBlocks.length === 0 ||
@@ -428,29 +433,34 @@ const updateBlocks = (page_id, newBlocks) => {
       });
       return;
     }
-    const page = await getPageById(page_id);
-    if (!page || page.error) {
-      reject(page);
-      return;
-    }
+    getPageById(page_id)
+      .then((page) => {
+        if (page.error) {
+          reject(page); // May be useless since an error should not arrive here
+          return;
+        }
+        // Delete missing blocks
+        const deletePromises = page.blocks
+          .filter((b) => !newBlocks.some((nb) => nb.id === b.id))
+          .map((b) => deleteBlock(page_id, b.id));
 
-    // Delete missing blocks
-    const deletePromises = page.blocks
-      .filter((b) => !newBlocks.some((nb) => nb.id === b.id))
-      .map((b) => deleteBlock(page_id, b.id));
+        // Add new blocks
+        const addPromises = newBlocks
+          .filter((nb) => !page.blocks.some((b) => b.id === nb.id))
+          .map((nb) => appendBlock(page_id, nb));
 
-    // Add new blocks
-    const addPromises = newBlocks
-      .filter((nb) => !page.blocks.some((b) => b.id === nb.id))
-      .map((nb) => appendBlock(page_id, nb));
+        const editPromises = newBlocks
+          .filter((nb) => page.blocks.some((b) => b.id === nb.id))
+          .map((nb) => updateBlock(page_id, nb.id, nb));
 
-    const editPromises = newBlocks
-      .filter((nb) => page.blocks.some((b) => b.id === nb.id))
-      .map((nb) => updateBlock(page_id, nb.id, nb));
-
-    Promise.all([...deletePromises, ...addPromises, ...editPromises])
-      .then((blocks) => {
-        resolve(blocks.filter((b) => b !== null));
+        Promise.all([...deletePromises, ...addPromises, ...editPromises])
+          .then((blocks) => {
+            resolve(blocks.filter((b) => b !== null));
+          })
+          .catch((err) => {
+            reject(err);
+            return;
+          });
       })
       .catch((err) => {
         reject(err);

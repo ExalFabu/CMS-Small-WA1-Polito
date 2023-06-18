@@ -2,6 +2,7 @@
 /* Data Access Object (DAO) module for accessing users */
 
 const db = require("./db");
+const { prettifyUnexpectedError } = require("./utils");
 const crypto = require("crypto");
 
 exports.getUserById = (id) => {
