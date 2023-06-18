@@ -20,7 +20,7 @@ const CHECK_AUTH_INTERVAL = 1000 * 30;// 60 * 5; // 5 minutes
 
 const newPageLoader = (user) => { 
   if (!user || user.role === 'user') throw json({ error: "Cannot create a new Page", details: "You must be logged in" }, 401);
-  return { title: "Nuova Pagina", author: user.id, blocks: [], author_name: user.name, published_at: null }
+  return { title: "Empty Page", author: user.id, blocks: [], author_name: user.name, published_at: null }
 };
 
 function App() {

@@ -20,8 +20,8 @@ const ErrorHandler = ({ error: errorObject, closeError }) => {
             variant="light"
             className="mt-4 px-4 justify-content-center d-flex flex-column text-center"
         >
-            <h1>{routeError?.data?.error ?? 'Something went wrong while loading the page'}</h1>
-            <p className="text-muted">{routeError?.data?.details ?? 'If the problem persists, contact the administrator'}</p>
+            <h1>{routeError?.data?.error ?? routeError?.error ?? 'Something went wrong while loading the page'}</h1>
+            <p className="text-muted">{routeError?.data?.details ?? routeError?.details ?? 'If the problem persists, contact the administrator'}</p>
             {showDebugError &&
                 <div>
                     <pre>{JSON.stringify(routeError)}</pre>

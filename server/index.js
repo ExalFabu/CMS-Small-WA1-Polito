@@ -18,7 +18,7 @@ app.use("/static", express.static('public')); // Images are in /static/images/fi
 
 /** Set up and enable Cross-Origin Resource Sharing (CORS) **/
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: process.env.CORS_URL ?? "http://localhost:5173",
   credentials: true,
 };
 app.use(cors(corsOptions));
