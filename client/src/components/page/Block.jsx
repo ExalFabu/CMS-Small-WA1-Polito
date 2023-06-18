@@ -18,7 +18,7 @@ const HeaderBlock = ({ block }) => {
 };
 
 const ParagraphBlock = ({ block }) => {
-  return <p>{block.content}</p>;
+  return <p style={{whiteSpace: "pre-wrap"}}>{block.content}</p>;
 };
 
 const ImageBlock = ({ block }) => {

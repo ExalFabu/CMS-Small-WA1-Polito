@@ -43,7 +43,7 @@ const EditModePageMetadata = ({ page, isAdmin, user, saveEditedPageMetadata, can
   const [pageHasChanged, setPageHasChanged] = useState(false);
 
   const changeEditor = (e) => {
-    const editor_id = e.target.value;
+    const editor_id = parseInt(e.target.value);
     const editor_name = e.target.options[e.target.selectedIndex].label;
     setEditedPage((currEditedPage) => ({ ...currEditedPage, author: editor_id, author_name: editor_name }));
   }
@@ -145,7 +145,7 @@ const EditModePageMetadata = ({ page, isAdmin, user, saveEditedPageMetadata, can
 
 EditModePageMetadata.propTypes = {
   page: PropTypes.shape({
-    id: PropTypes.number.isRequired,
+    id: PropTypes.number,
     author: PropTypes.number.isRequired,
     author_name: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
@@ -192,7 +192,7 @@ const ViewModePageMetadata = ({ page, setEditMode, editable, deletePage }) => {
 
 ViewModePageMetadata.propTypes = {
   page: PropTypes.shape({
-    id: PropTypes.number.isRequired,
+    id: PropTypes.number,
     author: PropTypes.number.isRequired,
     author_name: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
@@ -247,7 +247,7 @@ const PageMetadata = ({ page, editable, isAdmin, user, saveEditedPageMetadata, s
 
 PageMetadata.propTypes= {
   page: PropTypes.shape({
-    id: PropTypes.number.isRequired,
+    id: PropTypes.number,
     author: PropTypes.number.isRequired,
     author_name: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,

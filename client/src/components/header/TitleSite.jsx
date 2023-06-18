@@ -35,7 +35,7 @@ const TitleSite = ({ user, forcedFrontOffice }) => {
 
   return (
     <Row className="align-items-center w-100 justify-content-center">
-      <Col style={{"maxWidth": "fit-content"}}>
+      <Col style={{ "maxWidth": "fit-content" }}>
         {!editing ? (
           <h1 className="text-center">{siteName}</h1>
         ) : (
@@ -83,9 +83,9 @@ const TitleSite = ({ user, forcedFrontOffice }) => {
 };
 
 TitleSite.propTypes = {
-  user: {
+  user: PropTypes.shape({
     role: PropTypes.string,
-  },
+  }),
   forcedFrontOffice: PropTypes.bool,
 };
 

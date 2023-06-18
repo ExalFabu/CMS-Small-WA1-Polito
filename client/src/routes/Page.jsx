@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Container, Navbar, Spinner } from "react-bootstrap";
 import { useLoaderData, useNavigate, useRevalidator } from "react-router-dom";
 import Block from "../components/page/Block";
@@ -90,6 +90,7 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
       })
     }
   }, [editedPage, editedBlocks, isNew, page.id, navigate, revalidate]);
+  
   if (revalidatorState === "loading") {
     console.log("Loading");
     return <div className="position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center">
@@ -138,7 +139,7 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
               variant="primary"
               className="mx-auto"
             >
-              Aggiungi Blocco
+              Add new Block
             </Button>
             <Button
               disabled={!pageHasBeenEdited}
@@ -146,7 +147,7 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
               variant="success"
               className="mx-auto"
             >
-              {isNew ? "Crea Pagina" : "Salva Modifiche"}
+              {isNew ? "Create Page" : "Save Changes"}
             </Button>
           </Container>
         ) : (
@@ -158,9 +159,9 @@ const Page = ({ user, isNew = false, forcedFrontOffice }) => {
 };
 
 Page.propTypes = {
-  user: PropTypes.object.isRequired,
-  isNew: PropTypes.bool.isRequired,
+  user: PropTypes.object,
+  isNew: PropTypes.bool,
   forcedFrontOffice: PropTypes.bool.isRequired
 }
 
-export default Page;
+export default React.memo(Page);

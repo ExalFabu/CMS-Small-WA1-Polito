@@ -7,7 +7,7 @@ CMSmall - AW1 Exam Project by Alexandro Buffa - s316999
 
 ### Todo
 
-- [ ] Home page filtering (and searching?)  
+- [ ] remove useless filters from backend  
 
 ### In Progress
 
@@ -15,6 +15,8 @@ CMSmall - AW1 Exam Project by Alexandro Buffa - s316999
 
 ### Done ✓
 
+- [x] Fix topbar filter on radio click ignores name  
+- [x] Home page filtering (and searching?)  
 - [x] remove edit from eslintrc and check erros (probably should add jsdoc to props)  
 - [x] Update README.md  
 - [x] Define DB as required  

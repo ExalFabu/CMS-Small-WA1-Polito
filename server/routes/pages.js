@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const pagesDao = require("../db/pages-dao");
 const dayjs = require("dayjs");
-const { isLoggedIn, isRole, isEditor, check } = require("../middlewares");
+const { isRole, check } = require("../middlewares");
 const BYPASS_AUTH = process.env.BYPASS_AUTH === "true";
 
 const handleError = (err, res, message) => {
@@ -48,7 +48,7 @@ router.get("/", function (req, res) {
 /**
  * Create a new page
  */
-router.post("/", isEditor, function (req, res) {
+router.post("/", isRole(['editor', 'admin']), function (req, res) {
   // #swagger.tags = ['Pages']
   // #swagger.description = 'Endpoint to create a new page'
   /*
@@ -74,8 +74,10 @@ router.post("/", isEditor, function (req, res) {
   const page = req.body;
   if (!BYPASS_AUTH) {
     const userId = parseInt(req.user.id);
-    // TODO: Maybe it's better to throw Bad Request if they don't match
-    page.author = userId;
+    if(req.user.role === 'editor' && page.author !== userId) {
+      res.status(403).json({ error: "You can't create a page for someone else" });
+      return;
+    }
   }
   pagesDao
     .createPage(page, page.blocks)
@@ -83,7 +85,7 @@ router.post("/", isEditor, function (req, res) {
       res.json(page);
     })
     .catch((err) => {
-      handleError(err, res, "Error adding page to database");
+      handleError(err, res, "Error while creating a page");
     });
 });
 

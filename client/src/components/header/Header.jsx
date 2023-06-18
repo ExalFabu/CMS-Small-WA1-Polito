@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { Button, ButtonGroup, Navbar } from "react-bootstrap";
 import { Link, Outlet, useNavigate, useRevalidator } from "react-router-dom";
 import TitleSite from "./TitleSite";
@@ -63,7 +63,7 @@ const Header = ({ user, logout: stateLogout, forcedFrontOffice, setFFO }) => {
 
         <TitleSite user={user} forcedFrontOffice={forcedFrontOffice} />
         <Navbar.Brand className="me-0">
-          {user ? <span className="me-2"> Ciao {user.name}! </span> : <></>}
+          {user ? <span className="me-2"> Hi {user.name}! </span> : <></>}
           {user ? (
             <Link to="/" onClick={doLogout}>
               <FontAwesomeIcon icon={faArrowRightFromBracket} />
@@ -81,13 +81,13 @@ const Header = ({ user, logout: stateLogout, forcedFrontOffice, setFFO }) => {
 };
 
 Header.propTypes = {
-  user: {
+  user: PropTypes.shape({
     name: PropTypes.string,
     role: PropTypes.string,
-  },
+  }),
   logout: PropTypes.func.isRequired,
   forcedFrontOffice: PropTypes.bool,
   setFFO: PropTypes.func.isRequired
 };
 
-export default Header;
+export default React.memo(Header);
