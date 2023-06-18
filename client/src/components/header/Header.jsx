@@ -26,7 +26,7 @@ const Header = ({ user, logout: stateLogout }) => {
 
   const isFrontOfficeView = useMemo(() => {
     return isFrontOfficeViewWrapper(searchParam, user);
-  }, [searchParam, enabledBackOffice]);
+  }, [searchParam, user]);
 
   const setViewMode = (mode) => {
     if (!enabledBackOffice) {

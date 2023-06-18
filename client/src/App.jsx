@@ -1,8 +1,9 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   createBrowserRouter,
   createRoutesFromElements,
+  json,
   Route,
   RouterProvider,
 } from "react-router-dom";
@@ -16,6 +17,11 @@ import ErrorHandler from "./components/ErrorHandler";
 import NotFound from "./routes/404";
 
 const CHECK_AUTH_INTERVAL = 1000 * 30;// 60 * 5; // 5 minutes
+
+const newPageLoader = (user) => { 
+  if (!user || user.role === 'user') throw json({ error: "Cannot create a new Page", details: "You must be logged in" }, 401);
+  return { title: "Nuova Pagina", author: user.id, blocks: [], author_name: user.name, published_at: null }
+};
 
 function App() {
   const [user, setUser] = useState(null);
@@ -44,7 +50,7 @@ function App() {
             <Route exact path="" loader={pages.getPages} element={<Home user={user} />} />
             <Route exact path="login" element={<LoginForm login={setUser} />} />
             <Route path="page/:id" loader={({ params }) => pages.getPage(params.id)} element={<Page user={user} />} />
-            <Route shouldRevalidate={() => false} exact path="page/new" loader={() => ({ title: "Nuova Pagina", author: user.id, blocks: [], author_name: user.name, published_at: null })} element={<Page user={user} isNew={true} />} />
+            <Route shouldRevalidate={() => false} exact path="page/new" loader={() => newPageLoader(user)} element={<Page user={user} isNew={true} />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Route>

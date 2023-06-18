@@ -48,7 +48,7 @@ router.get("/", function (req, res) {
 /**
  * Create a new page
  */
-router.post("/", isRole(['editor', 'admin']), function (req, res) {
+router.post("/", isRole(["editor", "admin"]), function (req, res) {
   // #swagger.tags = ['Pages']
   // #swagger.description = 'Endpoint to create a new page'
   /*
@@ -74,8 +74,10 @@ router.post("/", isRole(['editor', 'admin']), function (req, res) {
   const page = req.body;
   if (!BYPASS_AUTH) {
     const userId = parseInt(req.user.id);
-    if(req.user.role === 'editor' && page.author !== userId) {
-      res.status(403).json({ error: "You can't create a page for someone else" });
+    if (req.user.role === "editor" && page.author !== userId) {
+      res
+        .status(403)
+        .json({ error: "You can't create a page for someone else" });
       return;
     }
   }
@@ -111,29 +113,29 @@ router.get("/:id", [check("id").isInt()], async function (req, res) {
   const id = parseInt(req.params.id);
   try {
     const page = await pagesDao.getPageById(id);
-    if(page.error) {
+    if (page.error) {
       res.status(page.code ?? 401).json(page);
       return;
     }
     const now = dayjs();
+    const isDraft = !page.published_at;
     const isPublished = dayjs(page.published_at).isBefore(now);
-    if (!isPublished) {
-      if (!req.user) {
-        res.status(403).json({
-          error: "You can't see this page",
-          details: "This is still a draft to be published",
-        });
-        return;
-      }
-      if (req.user.role !== "admin" && page.author !== req.user.id) {
-        res.status(403).json({
-          error: "You can't see this page",
-          details: "This draft belongs to someone else",
-        });
-        return;
-      }
+    if (req.user || isPublished) {
+      res.json(page);
+      return;
+    } else if (isDraft) {
+      res.status(403).json({
+        error: "You can't see this page",
+        details: "This is still a draft to be published",
+      });
+      return;
+    } else if (!isPublished) {
+      res.status(403).json({
+        error: "You can't see this page",
+        details: "This page is not published yet",
+      });
+      return;
     }
-    res.json(page);
   } catch (err) {
     return handleError(err, res, "Error retrieving page from database");
   }

@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
-import React, { useCallback, useEffect, useMemo } from "react";
-import { Button, Col, Container, FloatingLabel, Form, InputGroup, Row } from "react-bootstrap";
+import React, { useEffect, useMemo } from "react";
+import { Button, Col, Container, FloatingLabel, Form, Row } from "react-bootstrap";
 import { useLoaderData, useNavigate, useSearchParams } from "react-router-dom";
 import PageCard from "../components/PageCard";
 import PropTypes from 'prop-types';
@@ -9,7 +9,7 @@ import { isFrontOfficeViewWrapper } from '../components/header/Header'
 const pageIsPublished = (page) => dayjs(page.published_at).isBefore(dayjs());
 
 const FILTERS = {
-  all: { value: "all", label: "All", callback: (page) => true },
+  all: { value: "all", label: "All", callback: () => true },
   published: { value: "published", label: "Published", callback: pageIsPublished },
   drafts: { value: "drafts", label: "Drafts", callback: (page) => page.published_at === null },
   scheduled: { value: "scheduled", label: "Scheduled", callback: (page) => !pageIsPublished(page) && dayjs(page.published_at).isAfter(dayjs()) },
@@ -36,13 +36,12 @@ const FilterTopBar = ({ isBackOffice }) => {
 
   useEffect(() => {
     setSearchParam((otherParams) => ({ ...(Object.fromEntries(otherParams.entries())), name: searchName, filter: filterRadio, sort: sortsRadio }));
-  }, [filterRadio, searchName, sortsRadio]); // To trigger the effect whenever the params change
+  }, [filterRadio, searchName, sortsRadio, setSearchParam]); // To trigger the effect whenever the params change
 
-  const handleSubmit = useCallback((event) => {
+  const handleSubmit = (event) => {
     event?.preventDefault();
     event?.stopPropagation();
-    setSearchParam({ name: searchName, filter: filterRadio }); // redundant 
-  }, [filterRadio, searchName]);
+  }
 
   return <Form onSubmit={handleSubmit} className="my-2" >
     <Row className="mb-1">
@@ -66,7 +65,7 @@ const FilterTopBar = ({ isBackOffice }) => {
       <Col className="d-flex justify-content-start flex-wrap text-center">
         <Form.Label className="w-100 mb-0">Sort by</Form.Label>
         <div className="w-100">
-          {Object.entries(SORTS).map(([_, sort]) => {
+          {Object.entries(SORTS).map(([_, sort]) => { // eslint-disable-line no-unused-vars
             return <Form.Check
               key={sort.value}
               inline
@@ -86,7 +85,7 @@ const FilterTopBar = ({ isBackOffice }) => {
         <Form.Label className="w-100">Filter by</Form.Label>
         <div className="w-100">
 
-          {Object.entries(FILTERS).map(([_, filter]) => {
+          {Object.entries(FILTERS).map(([_, filter]) => { // eslint-disable-line no-unused-vars
             return <Form.Check
               key={filter.value}
               inline
@@ -125,52 +124,53 @@ const Home = ({ user }) => {
   const [filteredPages, setFilteredPages] = React.useState(pages);
   const [searchParam] = useSearchParams();
 
-  const forcedFrontOffice = useMemo(() => { 
+  const forcedFrontOffice = useMemo(() => {
     return isFrontOfficeViewWrapper(searchParam, user);
   }, [searchParam, user]);
 
 
-    const canCreatePage = useMemo(() => (user && (user.role === "admin" || user.role === "editor") && !forcedFrontOffice), [user, forcedFrontOffice])
+  const canCreatePage = useMemo(() => (user && (user.role === "admin" || user.role === "editor") && !forcedFrontOffice), [user, forcedFrontOffice])
 
-    useEffect(() => {
-      const name = searchParam.get("name") || "";
-      const filter = searchParam.get("filter") || "all";
-      const sorts = searchParam.get("sort") || "oldest";
-      const appliedFilters = applyFiltersNSorts(pages, filter, sorts, name, user?.id);
-      console.log("Pages in Home changed", appliedFilters, name, filter)
+  useEffect(() => {
+    const name = searchParam.get("name") || "";
+    const filter = searchParam.get("filter") || "all";
+    const sorts = searchParam.get("sort") || "oldest";
+    const appliedFilters = applyFiltersNSorts(pages, filter, sorts, name, user?.id);
+    console.log("Pages in Home changed", appliedFilters, name, filter)
 
-      if (forcedFrontOffice) {
-        setFilteredPages(appliedFilters.filter(pageIsPublished));
-      } else {
-        setFilteredPages(appliedFilters);
-      }
-    }, [forcedFrontOffice, pages, searchParam, user]);
+    if (forcedFrontOffice) {
+      setFilteredPages(appliedFilters.filter(pageIsPublished));
+    } else {
+      setFilteredPages(appliedFilters);
+    }
+  }, [forcedFrontOffice, pages, searchParam, user]);
 
-    const navigator = useNavigate();
+  const navigator = useNavigate();
 
-    return (
-      <div className="w-75 mx-auto">
-        <FilterTopBar isBackOffice={canCreatePage} /> {/*Same criteria */}
-        <Container className="d-flex flex-wrap align-items-center justify-content-evenly ">
-          {filteredPages.map((page) => {
-            return <PageCard key={page.id} page={page} user={user} forcedFrontOffice={forcedFrontOffice} />;
-          })}
+  return (
+    <div className="w-75 mx-auto">
+      <FilterTopBar isBackOffice={canCreatePage} /> {/*Same criteria */}
+      <Container className="d-flex flex-wrap align-items-center justify-content-evenly ">
+        {filteredPages.map((page) => {
+          return <PageCard key={page.id} page={page} user={user} forcedFrontOffice={forcedFrontOffice} />;
+        })}
+      </Container>
+      {canCreatePage ? (
+        <Container className="my-5 d-flex justify-content-center">
+          <Button variant="primary" onClick={() => navigator("/page/new")}>Crea una nuova Pagina</Button>
         </Container>
-        {canCreatePage ? (
-          <Container className="my-5 d-flex justify-content-center">
-            <Button variant="primary" onClick={() => navigator("/page/new")}>Crea una nuova Pagina</Button>
-          </Container>
-        ) : (
-          <></>
-        )}
-      </div>
-    );
-  };
+      ) : (
+        <></>
+      )}
+    </div>
+  );
+};
 
-  Home.propTypes = {
-    user: PropTypes.shape({
-      role: PropTypes.string,
-    })
-  };
+Home.propTypes = {
+  user: PropTypes.shape({
+    id: PropTypes.number,
+    role: PropTypes.string,
+  })
+};
 
-  export default Home;
+export default Home;

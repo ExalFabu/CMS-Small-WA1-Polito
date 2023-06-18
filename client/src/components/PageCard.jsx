@@ -15,7 +15,7 @@ export const PubishedLabel = ({date}) => {
 }
 
 PubishedLabel.propTypes = {
-  date: PropTypes.string.isRequired
+  date: PropTypes.string
 };
 
 const PageCard = ({ page, user, forcedFrontOffice }) => {
