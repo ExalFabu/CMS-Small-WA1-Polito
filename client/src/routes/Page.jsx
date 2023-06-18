@@ -116,6 +116,7 @@ const Page = ({ user, isNew = false }) => {
           user={user}
           saveEditedPageMetadata={saveEditedPageMetadata}
           setError={setSaveError}
+          isNew={isNew}
         />
       </div>
       {editedBlocks.map((block, idx) => (

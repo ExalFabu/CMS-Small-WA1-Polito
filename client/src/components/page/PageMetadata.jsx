@@ -22,7 +22,7 @@ import { useNavigate } from "react-router-dom";
 import DeleteButton from "../DeleteButton";
 import PropTypes from 'prop-types';
 
-const EditModePageMetadata = ({ page, isAdmin, user, saveEditedPageMetadata, cancelEdit, deletePage }) => {
+const EditModePageMetadata = ({ page, isAdmin, user, saveEditedPageMetadata, cancelEdit, deletePage, isNew }) => {
   const [editedPage, setEditedPage] = useState(page);
   useEffect(() => {
     setEditedPage(page);
@@ -134,8 +134,10 @@ const EditModePageMetadata = ({ page, isAdmin, user, saveEditedPageMetadata, can
             <Button size="sm" variant="outline-secondary" onClick={cancelEdit}>
               <FontAwesomeIcon icon={faCancel} />
             </Button>
-            <div className="hr border"></div>
-            <DeleteButton onClick={deletePage} popoverText={`Click twice to delete the current Page`}/>
+            {!isNew && (<>
+              <div className="hr border"></div>
+              <DeleteButton onClick={deletePage} popoverText={`Click twice to delete the current Page`} />
+            </>)}
           </Stack>
         </Col>
       </Row>
@@ -159,10 +161,11 @@ EditModePageMetadata.propTypes = {
   }),
   saveEditedPageMetadata: PropTypes.func.isRequired,
   cancelEdit: PropTypes.func.isRequired,
-  deletePage: PropTypes.func.isRequired
+  deletePage: PropTypes.func.isRequired,
+  isNew: PropTypes.bool.isRequired
 };
 
-const ViewModePageMetadata = ({ page, setEditMode, editable, deletePage }) => {
+const ViewModePageMetadata = ({ page, setEditMode, editable, deletePage, isNew }) => {
 
   return (
     <Container className="">
@@ -179,8 +182,10 @@ const ViewModePageMetadata = ({ page, setEditMode, editable, deletePage }) => {
             <Button size="sm" variant="outline-primary" onClick={setEditMode}>
               <FontAwesomeIcon icon={faPenToSquare} />
             </Button>
-            <div className="hr border"></div>
-            <DeleteButton onClick={deletePage} popoverText={`Click twice to delete the current Page`}/>
+            {!isNew && (<>
+              <div className="hr border"></div>
+              <DeleteButton onClick={deletePage} popoverText={`Click twice to delete the current Page`} />
+            </>)}
           </Col>
         ) : (
           <></>
@@ -201,10 +206,11 @@ ViewModePageMetadata.propTypes = {
   }),
   editable: PropTypes.bool.isRequired,
   setEditMode: PropTypes.func.isRequired,
-  deletePage: PropTypes.func.isRequired
+  deletePage: PropTypes.func.isRequired,
+  isNew: PropTypes.bool.isRequired
 };
 
-const PageMetadata = ({ page, editable, isAdmin, user, saveEditedPageMetadata, setError }) => {
+const PageMetadata = ({ page, editable, isAdmin, user, saveEditedPageMetadata, setError, isNew }) => {
   const [editMode, setEditMode] = useState(false);
 
   const saveWrapper = (editedPage) => {
@@ -231,6 +237,7 @@ const PageMetadata = ({ page, editable, isAdmin, user, saveEditedPageMetadata, s
         saveEditedPageMetadata={saveWrapper}
         cancelEdit={() => setEditMode(false)}
         deletePage={deletePage}
+        isNew={isNew}
       />
     );
   } else {
@@ -240,12 +247,13 @@ const PageMetadata = ({ page, editable, isAdmin, user, saveEditedPageMetadata, s
         editable={editable}
         setEditMode={() => setEditMode(true)}
         deletePage={deletePage}
+        isNew={isNew}
       />
     );
   }
 };
 
-PageMetadata.propTypes= {
+PageMetadata.propTypes = {
   page: PropTypes.shape({
     id: PropTypes.number,
     author: PropTypes.number.isRequired,
@@ -261,7 +269,8 @@ PageMetadata.propTypes= {
     name: PropTypes.string,
   }),
   saveEditedPageMetadata: PropTypes.func.isRequired,
-  setError: PropTypes.func.isRequired
+  setError: PropTypes.func.isRequired,
+  isNew: PropTypes.bool.isRequired
 };
 
 export default React.memo(PageMetadata);
