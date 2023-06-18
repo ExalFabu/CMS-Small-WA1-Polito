@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Button,
   Col,
@@ -36,9 +36,14 @@ const TitleSite = ({ user }) => {
   const [editing, setEditing] = React.useState(false);
   const [newSiteName, setNewSiteName] = React.useState(siteName);
 
-  const updateSiteName = (newSiteName) => {
-    api.setSiteName(newSiteName).then(() => setSiteName(newSiteName));
-  };
+  const updateSiteName = useCallback((e) => {
+    console.log("save")
+    e?.preventDefault();
+    e?.stopPropagation();
+    api.setSiteName(newSiteName).then(() => {
+      setSiteName(newSiteName); setEditing(false);
+    });
+  }, [newSiteName]);
 
   return (
     <Row className="align-items-center w-100 justify-content-center">
@@ -46,13 +51,15 @@ const TitleSite = ({ user }) => {
         {!editing ? (
           <h1 className="text-center">{siteName}</h1>
         ) : (
-          <FloatingLabel label="Nome del Sito">
-            <Form.Control
-              type="text"
-              value={newSiteName}
-              onChange={(ev) => setNewSiteName(ev.target.value)}
-            />
-          </FloatingLabel>
+          <Form onSubmit={updateSiteName}>
+            <FloatingLabel label="Nome del Sito">
+              <Form.Control
+                type="text"
+                value={newSiteName}
+                onChange={(ev) => setNewSiteName(ev.target.value)}
+              />
+            </FloatingLabel>
+          </Form>
         )}
       </Col>
       <Col xs="1" hidden={!isEditable}>
@@ -65,10 +72,7 @@ const TitleSite = ({ user }) => {
             <Button
               size="sm"
               variant="outline-success"
-              onClick={() => {
-                setEditing(false);
-                updateSiteName(newSiteName);
-              }}
+              onClick={updateSiteName}
             >
               <FontAwesomeIcon icon={faFloppyDisk} />
             </Button>
