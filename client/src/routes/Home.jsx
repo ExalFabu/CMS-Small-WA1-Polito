@@ -68,6 +68,7 @@ const FilterTopBar = ({ isBackOffice }) => {
           {Object.entries(SORTS).map(([_, sort]) => { // eslint-disable-line no-unused-vars
             return <Form.Check
               key={sort.value}
+              id={`sort-radio-${sort.value}`}
               inline
               type="radio"
               name="sort"
@@ -89,6 +90,7 @@ const FilterTopBar = ({ isBackOffice }) => {
             return <Form.Check
               key={filter.value}
               inline
+              id={`filter-radio-${filter.value}`}
               type="radio"
               name="filter"
               value={filter.value}
@@ -157,7 +159,7 @@ const Home = ({ user }) => {
       </Container>
       {canCreatePage ? (
         <Container className="my-5 d-flex justify-content-center">
-          <Button variant="primary" onClick={() => navigator("/page/new")}>Crea una nuova Pagina</Button>
+          <Button variant="primary" onClick={() => navigator("/page/new")}>Create a new Page</Button>
         </Container>
       ) : (
         <></>

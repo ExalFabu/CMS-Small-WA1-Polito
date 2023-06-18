@@ -26,13 +26,10 @@ router.get("/", function (req, res) {
     }
    */
 
-  let filterName = "all";
-  if (!req.user || req.user.role === "user") {
-    filterName = "published";
-  }
+  let publishedOnly = !req.user || req.user.role === "user";
 
   pagesDao
-    .getPagesHead(filterName)
+    .getPagesHead(publishedOnly)
     .then((pages) => {
       // Misunderstood requirement: editors can see drafts of other editors
       // if (req.user && req.user.role === "editor") {

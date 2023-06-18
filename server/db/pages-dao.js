@@ -4,16 +4,6 @@ const dayjs = require("dayjs");
 
 const { prettifyUnexpectedError } = require("./utils");
 
-const filters = {
-  all: () => true,
-  draft: (page) =>
-    page.published_at === null || page.published_at === undefined,
-  published: (page) =>
-    dayjs(page.published_at).isBefore(dayjs()) ||
-    dayjs(page.published_at).isSame(dayjs()),
-  scheduled: (page) => dayjs(page.published_at).isAfter(dayjs()),
-};
-
 const pageBlocksCount = (blocks) => {
   blocks = blocks ?? [];
   return {
@@ -35,6 +25,7 @@ const pageBlocksCount = (blocks) => {
  * @property {string} author
  * @property {string} published_at
  * @property {string} created_at
+ * @property {string} author_name
  */
 
 /** Block Typedef
@@ -101,11 +92,12 @@ const getPageById = (id) => {
 
 /**
  *
- * @param {string} filterName
+ * @param {boolean} publishedOnly
  * @returns {Promise<PageHead[]|Error>}
  */
-const getPagesHead = (filterName) => {
+const getPagesHead = (publishedOnly) => {
   return new Promise((resolve, reject) => {
+    // Could filter publishedOnly via SQL but i don't want to play with dates on sqlite
     const sql =
       "SELECT p.*, a.name as author_name FROM pages p, users a WHERE a.id = p.author ORDER BY p.published_at";
     db.all(sql, [], (err, rows) => {
@@ -121,8 +113,13 @@ const getPagesHead = (filterName) => {
         created_at: row.created_at,
         author_name: row.author_name,
       }));
-      if (filterName && Object.keys(filters).includes(filterName)) {
-        resolve(pages.filter(filters[filterName]));
+      if (publishedOnly) {
+        resolve(
+          pages.filter(
+            (p) =>
+              p.published_at !== null && dayjs(p.published_at).isBefore(dayjs())
+          )
+        );
       } else {
         resolve(pages);
       }
@@ -138,6 +135,8 @@ const getPagesHead = (filterName) => {
  */
 const createPage = (page, blocks) => {
   return new Promise((resolve, reject) => {
+    // These checks could've been done via express-validator.check but i wanted to keep the db layer as independent as possible
+    // also because i wrote this first so i don't see the point in rewriting it
     if (page.author === undefined || page.author === null) {
       reject({
         error: "Author is required.",
@@ -167,7 +166,6 @@ const createPage = (page, blocks) => {
       return;
     }
     if (
-      blocks.length <= 1 ||
       !(
         blocks.some((b) => b.type === "header") &&
         blocks.some((b) => b.type !== "header")
@@ -183,7 +181,7 @@ const createPage = (page, blocks) => {
       return;
     }
     page.published_at = page.published_at
-      ? dayjs(page.published_at).toISOString()
+      ? dayjs(page.published_at).startOf("day").toISOString()
       : null;
     const sql =
       "INSERT INTO pages(title, published_at, author, created_at) VALUES(?,?,?,?)";
@@ -260,7 +258,7 @@ const updatePage = (page) => {
       });
     }
     page.published_at = page.published_at
-      ? dayjs(page.published_at).toISOString()
+      ? dayjs(page.published_at).startOf("day").toISOString()
       : null;
     const sql =
       "UPDATE pages SET title = ?, published_at = ?, author = ? WHERE id = ?";
@@ -477,5 +475,4 @@ module.exports = {
   deletePage,
   updatePage,
   updateBlocks,
-  filters,
 };

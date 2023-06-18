@@ -7,14 +7,14 @@ CMSmall - AW1 Exam Project by Alexandro Buffa - s316999
 
 ### Todo
 
-- [ ] remove useless filters from backend  
 
 ### In Progress
 
-- [ ] Check API Error messages  
 
 ### Done ✓
 
+- [x] Check API Error messages  
+- [x] remove useless filters from backend  
 - [x] Fix topbar filter on radio click ignores name  
 - [x] Home page filtering (and searching?)  
 - [x] remove edit from eslintrc and check erros (probably should add jsdoc to props)  
