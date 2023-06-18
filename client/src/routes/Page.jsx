@@ -28,6 +28,7 @@ const Page = ({ user, isNew = false }) => {
   const [editedPage, setEditedPage] = useState(deepCopy({ ...page, blocks: [] })); // Blocks are not needed in this object
   const [editedBlocks, setEditedBlocks] = useState(deepCopy(page.blocks)); // We need to deep copy the blocks, otherwise we will modify the original page
   const [pageHasBeenEdited, setPageHasBeenEdited] = useState(false);
+  const [currentlyEditingCount, setCurrentlyEditingCount] = useState(0); // Used to keep track of how many blocks are currently being edited
   const [saveError, setSaveError] = useState(null);
   useEffect(() => {
     setEditedPage(deepCopy({ ...page, blocks: [] }));
@@ -96,7 +97,7 @@ const Page = ({ user, isNew = false }) => {
       })
     }
   }, [editedPage, editedBlocks, isNew, page.id, navigate, revalidate]);
-  
+
   if (revalidatorState === "loading") {
     console.log("Loading");
     return <div className="position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center">
@@ -117,6 +118,7 @@ const Page = ({ user, isNew = false }) => {
           saveEditedPageMetadata={saveEditedPageMetadata}
           setError={setSaveError}
           isNew={isNew}
+          setCurrentlyEditingCount={setCurrentlyEditingCount}
         />
       </div>
       {editedBlocks.map((block, idx) => (
@@ -127,6 +129,7 @@ const Page = ({ user, isNew = false }) => {
           setBlock={setEditedBlock}
           isFirst={idx === 0}
           isLast={idx === editedBlocks.length - 1}
+          setCurrentlyEditingCount={setCurrentlyEditingCount}
         />
       ))}
 
@@ -149,7 +152,7 @@ const Page = ({ user, isNew = false }) => {
               Add new Block
             </Button>
             <Button
-              disabled={!pageHasBeenEdited}
+              disabled={!pageHasBeenEdited || currentlyEditingCount > 0}
               onClick={saveEditedPage}
               variant="success"
               className="mx-auto"

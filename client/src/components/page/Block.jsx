@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Container, Row, Col, Button, Form, Stack, Image } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -18,7 +18,7 @@ const HeaderBlock = ({ block }) => {
 };
 
 const ParagraphBlock = ({ block }) => {
-  return <p style={{whiteSpace: "pre-wrap"}}>{block.content}</p>;
+  return <p style={{ whiteSpace: "pre-wrap" }}>{block.content}</p>;
 };
 
 const ImageBlock = ({ block }) => {
@@ -95,7 +95,7 @@ const EditableBlock = ({ block, setBlock, images, formSubmit }) => {
         </>
         )}
       </Form.Group>
-      
+
     </Form>
   );
 };
@@ -113,7 +113,7 @@ EditableBlock.propTypes = {
   formSubmit: PropTypes.func.isRequired,
 };
 
-const Block = ({ block, editable, setBlock, isFirst, isLast }) => {
+const Block = ({ block, editable, setBlock, isFirst, isLast, setCurrentlyEditingCount }) => {
   const [localBlock, setLocalBlock] = useState(block);
   const [isEditing, setIsEditing] = useState(false);
   const [selectableImages, setSelectableImages] = useState([]);
@@ -121,6 +121,16 @@ const Block = ({ block, editable, setBlock, isFirst, isLast }) => {
     getImages().then((images) => setSelectableImages(images));
   }, []);
 
+  useEffect(() => {
+    if (isEditing) {
+      setCurrentlyEditingCount((count) => count + 1);
+    }
+    return () => {
+      if (isEditing) {
+        setCurrentlyEditingCount((count) => count - 1);
+      }
+    }
+  }, [isEditing, setCurrentlyEditingCount]);
 
   useEffect(() => {
     setLocalBlock(block);
@@ -142,7 +152,7 @@ const Block = ({ block, editable, setBlock, isFirst, isLast }) => {
   }, [block, setBlock]);
 
   const isValid = useCallback(() => {
-    if(localBlock.type === "image") {
+    if (localBlock.type === "image") {
       return selectableImages.find((it) => it.path === localBlock.content) !== undefined;
     }
     return !!localBlock.content.trim();
@@ -204,7 +214,8 @@ const Block = ({ block, editable, setBlock, isFirst, isLast }) => {
                   </Button> */}
                   <DeleteButton
                     onClick={deleteBlock}
-                    />
+                    popoverText={`Click twice to delete this Block`}
+                  />
                 </Stack>
               </Stack>
             )}
@@ -235,6 +246,7 @@ Block.propTypes = {
   setBlock: PropTypes.func.isRequired,
   isFirst: PropTypes.bool.isRequired,
   isLast: PropTypes.bool.isRequired,
+  setCurrentlyEditingCount: PropTypes.func.isRequired,
 };
 
-export default Block;
+export default React.memo(Block);

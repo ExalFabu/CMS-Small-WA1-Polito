@@ -14,7 +14,7 @@ const DeleteButton = ({ onClick, label, popoverText, ...props }) => {
             setIsClickedOnce(true);
             setTimeout(() => {
                 setIsClickedOnce(false);
-            }, 1000);
+            }, 2000);
         }
     }, [isClickedOnce, onClick]);
 
@@ -24,7 +24,7 @@ const DeleteButton = ({ onClick, label, popoverText, ...props }) => {
             placement={"auto-end"}
             overlay={
                 <Tooltip id={`tooltip-to-confirm-delete`}>
-                    {popoverText ?? `Click twice to confirm the delete.`} ({isClickedOnce ? "1" : "0"} /2)
+                    {popoverText ?? `Click twice to confirm the delete.`} ({isClickedOnce ? "1" : "0"}/2)
                 </Tooltip>
             }
         >

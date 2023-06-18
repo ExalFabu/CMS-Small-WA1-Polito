@@ -73,7 +73,7 @@ const PageCard = ({ page, user, forcedFrontOffice }) => {
             // <Button variant="danger" className="mx-auto" onClick={deletePage}>
             //   Elimina <FontAwesomeIcon icon={faTrash} />
             // </Button>
-            <DeleteButton onClick={deletePage} label={"Delete"} />
+            <DeleteButton onClick={deletePage} label={"Delete"} popoverText={"Click twice to delete this Page"} />
           ) : (
             <> </>
           )}

@@ -210,8 +210,19 @@ ViewModePageMetadata.propTypes = {
   isNew: PropTypes.bool.isRequired
 };
 
-const PageMetadata = ({ page, editable, isAdmin, user, saveEditedPageMetadata, setError, isNew }) => {
+const PageMetadata = ({ page, editable, isAdmin, user, saveEditedPageMetadata, setError, isNew, setCurrentlyEditingCount }) => {
   const [editMode, setEditMode] = useState(false);
+
+  useEffect(() => {
+    if (editMode) {
+      setCurrentlyEditingCount((count) => count + 1);
+    }
+    return () => {
+      if (editMode) {
+        setCurrentlyEditingCount((count) => count - 1);
+      }
+    }
+  }, [editMode, setCurrentlyEditingCount]);
 
   const saveWrapper = (editedPage) => {
     saveEditedPageMetadata(editedPage);
@@ -270,7 +281,8 @@ PageMetadata.propTypes = {
   }),
   saveEditedPageMetadata: PropTypes.func.isRequired,
   setError: PropTypes.func.isRequired,
-  isNew: PropTypes.bool.isRequired
+  isNew: PropTypes.bool.isRequired,
+  setCurrentlyEditingCount: PropTypes.func.isRequired
 };
 
 export default React.memo(PageMetadata);
