@@ -12,7 +12,6 @@ const isRole = (role) => {
   if (!Array.isArray(role)) role = [role];
   if (BYPASS_AUTH) return (req, res, next) => next();
   return (req, res, next) => {
-    console.log("isRole", req.user, role);
     if (req.isAuthenticated() && role.includes(req.user.role)) return next();
     else return res.status(401).json({ error: "Not authorized" });
   };

@@ -3,7 +3,6 @@ import { useNavigate, useRouteError } from "react-router-dom";
 import PropTypes from 'prop-types';
 
 const ErrorHandler = ({ error: errorObject, closeError }) => {
-    console.log(errorObject)
     const navigate = useNavigate();
     const routeError = useRouteError();
     const showDebugError = false; // TODO: remove this line

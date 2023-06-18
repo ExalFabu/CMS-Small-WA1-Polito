@@ -33,7 +33,6 @@ const Page = ({ user, isNew = false }) => {
   useEffect(() => {
     setEditedPage(deepCopy({ ...page, blocks: [] }));
     setEditedBlocks(deepCopy(page.blocks));
-    console.log("Page from useLoaderData changed")
     setPageHasBeenEdited(false);
   }, [page, JSON.stringify(page.blocks)]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -86,7 +85,6 @@ const Page = ({ user, isNew = false }) => {
       // Create new page and redirect to it
       createPage(finalPage).then(
         (page) => {
-          console.log(page)
           setSaveError(null); // should be useless, but always better to be safe than sorry
           navigate(`/page/${page.id}`);
         }
@@ -99,7 +97,6 @@ const Page = ({ user, isNew = false }) => {
   }, [editedPage, editedBlocks, isNew, page.id, navigate, revalidate]);
 
   if (revalidatorState === "loading") {
-    console.log("Loading");
     return <div className="position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center">
       <Spinner animation="border" role="status">
         <span className="visually-hidden">Loading...</span>

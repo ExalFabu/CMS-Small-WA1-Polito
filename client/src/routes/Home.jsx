@@ -138,7 +138,6 @@ const Home = ({ user }) => {
     const filter = searchParam.get("filter") || "all";
     const sorts = searchParam.get("sort") || "oldest";
     const appliedFilters = applyFiltersNSorts(pages, filter, sorts, name, user?.id);
-    console.log("Pages in Home changed", appliedFilters, name, filter)
 
     if (forcedFrontOffice) {
       setFilteredPages(appliedFilters.filter(pageIsPublished));
