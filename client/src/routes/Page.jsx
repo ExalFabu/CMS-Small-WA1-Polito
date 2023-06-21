@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Container, Navbar, Spinner } from "react-bootstrap";
+import { Button, Container, Dropdown, DropdownButton, Navbar, Spinner } from "react-bootstrap";
 import { useLoaderData, useNavigate, useRevalidator, useSearchParams } from "react-router-dom";
 import Block from "../components/page/Block";
 import { createPage, updatePage } from "../api/pages";
@@ -12,6 +12,38 @@ import { isFrontOfficeViewWrapper } from "../components/header/Header";
 
 const deepCopy = (obj) => {
   return JSON.parse(JSON.stringify(obj));
+}
+
+const createNewBlock = (type, page_id, order) => {
+  if (type === "paragraph") {
+    return {
+      order: order,
+      type: "paragraph",
+      content: "Empty Paragraph",
+      page_id: page_id,
+      id: dayjs().valueOf() // Locally generated id, to be replaced by the server on page create/update
+    }
+  }
+
+  if (type === "image") {
+    return {
+      order: order,
+      type: "image",
+      content: "images/bread.jpg",
+      page_id: page_id,
+      id: dayjs().valueOf() // Locally generated id, to be replaced by the server on page create/update
+    }
+  }
+
+  if (type === "header") {
+    return {
+      order: order,
+      type: "header",
+      content: "Empty Header",
+      page_id: page_id,
+      id: dayjs().valueOf() // Locally generated id, to be replaced by the server on page create/update
+    }
+  }
 }
 
 
@@ -133,21 +165,25 @@ const Page = ({ user, isNew = false }) => {
       <Navbar fixed="bottom">
         {editable ? (
           <Container>
-            <Button
-              onClick={() =>
-                setEditedBlock({
-                  order: editedBlocks.length + 1,
-                  type: "paragraph",
-                  content: "Empty Paragraph",
-                  page_id: page.id,
-                  id: dayjs().valueOf() // Locally generated id, to be replaced by the server on page create/update
-                })
-              }
+            <DropdownButton
+              id="add-block-dropdown"
+              title="New Block"
               variant="primary"
               className="mx-auto"
+              autoClose="outside"
+              drop="up"
             >
-              Add new Block
-            </Button>
+              {['Header', 'Paragraph', 'Image'].map((type) => (<Dropdown.Item
+                  key={type}
+                  onClick={() =>
+                    setEditedBlock(createNewBlock(type.toLowerCase(), page.id, editedBlocks.length + 1))
+                  }
+                >
+                  {`Append new ${type}`}
+                </Dropdown.Item>)
+                )}
+
+            </DropdownButton>
             <Button
               disabled={!pageHasBeenEdited || currentlyEditingCount > 0}
               onClick={saveEditedPage}

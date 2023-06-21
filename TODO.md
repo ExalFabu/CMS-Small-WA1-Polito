@@ -7,6 +7,7 @@ CMSmall - AW1 Exam Project by Alexandro Buffa - s316999
 
 ### Todo
 
+- [ ] Context for users? Think about it  
 - [ ] Delete all Pages and go through everything again for a final check  
 
 ### In Progress
