@@ -4,10 +4,23 @@ import { useNavigate } from "react-router-dom";
 import { login } from "../api/auth";
 import PropTypes from 'prop-types';
 
+const FAST_LOGIN = false;
 
 function LoginForm(props) {
-  const [username, setUsername] = useState("buffa@test.com");
-  const [password, setPassword] = useState("password");
+  let startingState = {
+    username: "",
+    password: "",
+  };
+  
+  if(FAST_LOGIN){
+    startingState = {
+      username: "buffa@test.com",
+      password: "password",
+    };
+  }
+
+  const [username, setUsername] = useState(startingState.username);
+  const [password, setPassword] = useState(startingState.password);
   const [errorMessage, setErrorMessage] = useState("");
 
   const navigate = useNavigate();
