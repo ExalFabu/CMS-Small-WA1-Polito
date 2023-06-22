@@ -1,10 +1,11 @@
 import dayjs from "dayjs";
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useContext, useEffect, useMemo } from "react";
 import { Button, Col, Container, FloatingLabel, Form, Row } from "react-bootstrap";
 import { useLoaderData, useNavigate, useSearchParams } from "react-router-dom";
 import PageCard from "../components/PageCard";
 import PropTypes from 'prop-types';
 import { isFrontOfficeViewWrapper } from '../components/header/Header'
+import { userContext } from "../App";
 
 const pageIsPublished = (page) => dayjs(page.published_at).isBefore(dayjs());
 
@@ -166,7 +167,8 @@ const applyFiltersNSorts = (pages, filter, sort, sortDirection, name, user_id) =
 }
 
 
-const Home = ({ user }) => {
+const Home = () => {
+  const user = useContext(userContext);
   const pages = useLoaderData();
   const [filteredPages, setFilteredPages] = React.useState(pages);
   const [searchParam] = useSearchParams();
@@ -209,11 +211,11 @@ const Home = ({ user }) => {
   );
 };
 
-Home.propTypes = {
-  user: PropTypes.shape({
-    id: PropTypes.number,
-    role: PropTypes.string,
-  })
-};
+// Home.propTypes = {
+//   user: PropTypes.shape({
+//     id: PropTypes.number,
+//     role: PropTypes.string,
+//   })
+// };
 
 export default Home;

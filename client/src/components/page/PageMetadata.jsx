@@ -5,7 +5,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import {
   Button,
   Col,
@@ -21,8 +21,11 @@ import pagesApi from "../../api/pages";
 import { useNavigate } from "react-router-dom";
 import DeleteButton from "../DeleteButton";
 import PropTypes from 'prop-types';
+import { userContext } from "../../App";
 
-const EditModePageMetadata = ({ page, isAdmin, user, saveEditedPageMetadata, cancelEdit, deletePage, isNew }) => {
+const EditModePageMetadata = ({ page, saveEditedPageMetadata, cancelEdit, deletePage, isNew }) => {
+  const user = useContext(userContext);
+  const isAdmin = useMemo(() => (user && user.role === "admin"), [user]);
   const [editedPage, setEditedPage] = useState(page);
   useEffect(() => {
     setEditedPage(page);
@@ -156,11 +159,6 @@ EditModePageMetadata.propTypes = {
     published_at: PropTypes.string,
     created_at: PropTypes.string
   }),
-  isAdmin: PropTypes.bool.isRequired,
-  user: PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
   saveEditedPageMetadata: PropTypes.func.isRequired,
   cancelEdit: PropTypes.func.isRequired,
   deletePage: PropTypes.func.isRequired,
@@ -212,8 +210,9 @@ ViewModePageMetadata.propTypes = {
   isNew: PropTypes.bool.isRequired
 };
 
-const PageMetadata = ({ page, editable, isAdmin, user, saveEditedPageMetadata, setError, isNew, setCurrentlyEditingCount }) => {
+const PageMetadata = ({ page, editable, saveEditedPageMetadata, setError, isNew, setCurrentlyEditingCount }) => {
   const [editMode, setEditMode] = useState(false);
+ 
 
   useEffect(() => {
     if (editMode) {
@@ -245,8 +244,6 @@ const PageMetadata = ({ page, editable, isAdmin, user, saveEditedPageMetadata, s
     return (
       <EditModePageMetadata
         page={page}
-        isAdmin={isAdmin}
-        user={user}
         saveEditedPageMetadata={saveWrapper}
         cancelEdit={() => setEditMode(false)}
         deletePage={deletePage}
@@ -276,11 +273,6 @@ PageMetadata.propTypes = {
     created_at: PropTypes.string
   }),
   editable: PropTypes.bool.isRequired,
-  isAdmin: PropTypes.bool.isRequired,
-  user: PropTypes.shape({
-    id: PropTypes.number,
-    name: PropTypes.string,
-  }),
   saveEditedPageMetadata: PropTypes.func.isRequired,
   setError: PropTypes.func.isRequired,
   isNew: PropTypes.bool.isRequired,

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Button, Container, Dropdown, DropdownButton, Navbar, Spinner } from "react-bootstrap";
 import { useLoaderData, useNavigate, useRevalidator, useSearchParams } from "react-router-dom";
 import Block from "../components/page/Block";
@@ -8,6 +8,7 @@ import ErrorHandler from "../components/ErrorHandler";
 import dayjs from "dayjs";
 import PropTypes from 'prop-types';
 import { isFrontOfficeViewWrapper } from "../components/header/Header";
+import { userContext } from "../App";
 
 
 const deepCopy = (obj) => {
@@ -47,7 +48,8 @@ const createNewBlock = (type, page_id, order) => {
 }
 
 
-const Page = ({ user, isNew = false }) => {
+const Page = ({ isNew = false }) => {
+  const user = useContext(userContext);
   const { state: revalidatorState, revalidate } = useRevalidator();
   const page = useLoaderData();
   const [searchParams] = useSearchParams();
@@ -142,8 +144,6 @@ const Page = ({ user, isNew = false }) => {
         <PageMetadata
           page={editedPage}
           editable={editable}
-          isAdmin={user && user.role === "admin"}
-          user={user}
           saveEditedPageMetadata={saveEditedPageMetadata}
           setError={setSaveError}
           isNew={isNew}
@@ -202,7 +202,6 @@ const Page = ({ user, isNew = false }) => {
 };
 
 Page.propTypes = {
-  user: PropTypes.object,
   isNew: PropTypes.bool,
 }
 

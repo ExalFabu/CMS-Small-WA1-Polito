@@ -1,5 +1,5 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-import { useEffect, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import {
   createBrowserRouter,
   createRoutesFromElements,
@@ -18,10 +18,12 @@ import NotFound from "./routes/404";
 
 const CHECK_AUTH_INTERVAL = 1000 * 30;// 60 * 5; // 5 minutes
 
-const newPageLoader = (user) => { 
+const newPageLoader = (user) => {
   if (!user || user.role === 'user') throw json({ error: "Cannot create a new Page", details: "You must be logged in" }, 401);
   return { title: "Empty Page", author: user.id, blocks: [], author_name: user.name, published_at: null }
 };
+
+export const userContext = createContext(null);
 
 function App() {
   const [user, setUser] = useState(null);
@@ -47,10 +49,10 @@ function App() {
           element={<Header user={user} logout={() => setUser(null)} />}
         >
           <Route errorElement={<ErrorHandler />}>
-            <Route exact path="" loader={pages.getPages} element={<Home user={user} />} />
+            <Route exact path="" loader={pages.getPages} element={<Home/>} />
             <Route exact path="login" element={<LoginForm login={setUser} />} />
-            <Route path="page/:id" loader={({ params }) => pages.getPage(params.id)} element={<Page user={user} />} />
-            <Route shouldRevalidate={() => false} exact path="page/new" loader={() => newPageLoader(user)} element={<Page user={user} isNew={true} />} />
+            <Route path="page/:id" loader={({ params }) => pages.getPage(params.id)} element={<Page />} />
+            <Route shouldRevalidate={() => false} exact path="page/new" loader={() => newPageLoader(user)} element={<Page isNew={true} />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Route>
@@ -65,7 +67,9 @@ function App() {
   });
 
 
-  return <RouterProvider router={router} />;
+  return <userContext.Provider value={user}>
+    <RouterProvider router={router} />
+  </userContext.Provider>;
 }
 
 export default App;
