@@ -37,6 +37,10 @@ router.put("/name", isAdmin, function (req, res) {
         #swagger.responses[200] = {
             description: 'Site name successfully updated',
         }
+        #swagger.responses[400] = {
+            description: 'Invalid name',
+            schema: { $ref: "#/definitions/Error" }
+        }
         #swagger.responses[401] = {
             description: 'Not authorized',
             schema: { $ref: "#/definitions/Error" }
@@ -47,6 +51,7 @@ router.put("/name", isAdmin, function (req, res) {
         }
     */
   const { name } = req.body;
+  if(!name) return res.status(400).json({error: "Invalid name"});
   setSiteName(name)
     .then(() => {
       res.status(200).end();

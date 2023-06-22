@@ -42,15 +42,22 @@ const TitleSite = ({ user }) => {
   const updateSiteName = useCallback((e) => {
     e?.preventDefault();
     e?.stopPropagation();
+    if (newSiteName.length === 0) return;
     setIsFetching(true);
     api.setSiteName(newSiteName).then(() => {
       setSiteName(newSiteName);
       setEditing(false);
       setIsFetching(false);
-    });
-  }, [newSiteName]);
+    })
+      .catch((err) => {
+        console.error(err);
+        setEditing(false);
+        setIsFetching(false);
+        setNewSiteName(siteName);
+      });
+  }, [newSiteName, siteName]);
 
-  if (isFetching)
+  if (isFetching || !siteName)
     return <div className="d-flex align-items-center w-100 justify-content-center">
       <Spinner animation="grow" role="status" >
         <span className="visually-hidden">Loading...</span>
@@ -64,12 +71,16 @@ const TitleSite = ({ user }) => {
           <h1 className="text-center">{siteName}</h1>
         ) : (
           <Form onSubmit={updateSiteName}>
-            <FloatingLabel label="Nome del Sito">
+            <FloatingLabel label="Site Name">
               <Form.Control
                 type="text"
                 value={newSiteName}
                 onChange={(ev) => setNewSiteName(ev.target.value)}
+                isInvalid={newSiteName.length === 0}
               />
+              <Form.Control.Feedback tooltip={true} type="invalid">
+                Please provide a valid site name.
+              </Form.Control.Feedback>
             </FloatingLabel>
           </Form>
         )}
