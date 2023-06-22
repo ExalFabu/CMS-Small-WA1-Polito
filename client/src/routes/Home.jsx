@@ -18,8 +18,8 @@ const FILTERS = {
 };
 
 const SORTS = {
-  oldest: { value: "creation", label: "Creation", callback: (a, b) => dayjs(a.created_at).startOf("day").isBefore(dayjs(b.created_at).startOf("day")) ? -1 : 1 },
-  newest: { value: "publish", label: "Publish", callback: (a, b) => dayjs(a.published_at.startOf("day")).isAfter(dayjs(b.published_at).startOf("day")) ? -1 : 1 },
+  creation: { value: "creation", label: "Creation", callback: (a, b) => dayjs(a.created_at).startOf("day").isBefore(dayjs(b.created_at).startOf("day")) ? -1 : 1 },
+  publish: { value: "publish", label: "Publish", callback: (a, b) => dayjs(a.published_at).startOf("day").isAfter(dayjs(b.published_at).startOf("day")) ? 1 : -1 },
   title: { value: "title", label: "Title", callback: (a, b) => a.title.localeCompare(b.title) },
   author: { value: "author", label: "Author", callback: (a, b) => a.author_name.localeCompare(b.author_name) }
 };
@@ -71,7 +71,7 @@ const FilterTopBar = ({ isBackOffice }) => {
   const [searchParam, setSearchParam] = useSearchParams();
   const [searchName, setSearchName] = React.useState(searchParam.get("name") || "");
   const [filterRadio, setFilterRadio] = React.useState(searchParam.get("filter") || "all");
-  const [sortsRadio, setSortsRadio] = React.useState(searchParam.get("sort") || "oldest");
+  const [sortsRadio, setSortsRadio] = React.useState(searchParam.get("sort") || "creation");
   const [sortDirection, setSortDirection] = React.useState(searchParam.get("sortDirection") || "desc");
 
 
