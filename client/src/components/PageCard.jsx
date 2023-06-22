@@ -1,17 +1,25 @@
 import { useMemo } from "react";
-import {  Card, Stack } from "react-bootstrap";
+import { Card, Col, Stack } from "react-bootstrap";
 import { useNavigate, useRevalidator } from "react-router-dom";
 import dayjs from "dayjs";
 import pagesApi from "../api/pages";
 import DeleteButton from "./DeleteButton";
 import PropTypes from 'prop-types';
 
-export const PubishedLabel = ({date}) => {
+export const PubishedLabel = ({ date }) => {
   const publishedDate = dayjs(date);
-  if (!publishedDate.isValid()) return <span className="text-muted">Draft</span>;
-  if (publishedDate.isAfter(dayjs()))
-    return <Stack className="text-muted" direction="vertical"><span>{publishedDate.format("DD/MM/YYYY")}</span><span>(scheduled)</span></Stack>;
-  return <span className="text-muted">{publishedDate.format("DD/MM/YYYY")}</span>;
+  let dateComponent;
+  if (!publishedDate.isValid()) dateComponent = <span className="text-muted">Draft</span>;
+  else if (publishedDate.isAfter(dayjs()))
+    dateComponent = <span className="text-muted"><i>{publishedDate.format("DD/MM/YYYY")}</i></span>;
+  else dateComponent = <span className="text-muted">{publishedDate.format("DD/MM/YYYY")}</span>;
+
+  return (
+    <Stack>
+      <div>{publishedDate.isValid() ? (publishedDate.isAfter(dayjs()) ? "Scheduled" : "Published") : " "}</div>
+      {dateComponent}
+    </Stack>
+  );
 }
 
 PubishedLabel.propTypes = {
@@ -64,15 +72,18 @@ const PageCard = ({ page, user, forcedFrontOffice }) => {
           </Card.Subtitle>
         </Card.Body>
         <Card.Footer
-          className="text-muted d-flex justify-content-around align-items-center align-content-center gap-5"
+          className="text-muted d-flex justify-content-around text-center align-items-center align-content-center gap-5"
           style={{ height: "min-content" }}
         >
-          <PubishedLabel date={page.published_at} />
+          <Col>
+            <div>Created</div>
+            <span className="text-muted">{dayjs(page.created_at).format("DD/MM/YYYY")}</span>
+          </Col>
+          <Col>
+            <PubishedLabel date={page.published_at} />
+          </Col>
 
           {isDeletable ? (
-            // <Button variant="danger" className="mx-auto" onClick={deletePage}>
-            //   Elimina <FontAwesomeIcon icon={faTrash} />
-            // </Button>
             <DeleteButton onClick={deletePage} label={"Delete"} popoverText={"Click twice to delete this Page"} />
           ) : (
             <> </>
@@ -90,6 +101,7 @@ PageCard.propTypes = {
     author_name: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     published_at: PropTypes.string,
+    created_at: PropTypes.string.isRequired,
   }),
   user: PropTypes.shape({
     id: PropTypes.number,
