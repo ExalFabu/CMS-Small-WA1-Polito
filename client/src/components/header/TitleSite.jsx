@@ -6,6 +6,7 @@ import {
   Form,
   Stack,
   FloatingLabel,
+  Spinner,
 } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -21,6 +22,7 @@ import { isFrontOfficeViewWrapper } from "./Header";
 const TitleSite = ({ user }) => {
   const [siteName, setSiteName] = useState("");
   const [searchParam] = useSearchParams();
+  const [isFetching, setIsFetching] = useState(true);
 
   const forcedFrontOffice = useMemo(() => {
     return isFrontOfficeViewWrapper(searchParam, user);
@@ -31,19 +33,29 @@ const TitleSite = ({ user }) => {
   useEffect(() => {
     document.title = siteName;
     setNewSiteName(siteName);
+    setIsFetching(false);
   }, [siteName]);
   const isEditable = useMemo(() => (user && user.role === "admin" && !forcedFrontOffice), [user, forcedFrontOffice]);
   const [editing, setEditing] = React.useState(false);
   const [newSiteName, setNewSiteName] = React.useState(siteName);
 
   const updateSiteName = useCallback((e) => {
-    console.log("save")
     e?.preventDefault();
     e?.stopPropagation();
+    setIsFetching(true);
     api.setSiteName(newSiteName).then(() => {
-      setSiteName(newSiteName); setEditing(false);
+      setSiteName(newSiteName);
+      setEditing(false);
+      setIsFetching(false);
     });
   }, [newSiteName]);
+
+  if (isFetching)
+    return <div className="d-flex align-items-center w-100 justify-content-center">
+      <Spinner animation="grow" role="status" >
+        <span className="visually-hidden">Loading...</span>
+      </Spinner>
+    </div>
 
   return (
     <Row className="align-items-center w-100 justify-content-center">
