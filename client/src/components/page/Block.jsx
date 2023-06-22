@@ -74,6 +74,7 @@ const EditableBlock = ({ block, setBlock, images, formSubmit }) => {
             value={block.content}
             onChange={(ev) => setBlock({ ...block, content: ev.target.value })}
             isInvalid={images.find((it) => it.path === block.content) === undefined}
+
           >
             {[...images, { path: block.content, name: "Choose an image" }].map((image) => (
               <option key={image.name} value={image.path}>
@@ -90,6 +91,7 @@ const EditableBlock = ({ block, setBlock, images, formSubmit }) => {
             value={block.content}
             onChange={(ev) => setBlock({ ...block, content: ev.target.value })}
             isInvalid={!block.content.trim()}
+            onClick={(ev) => ev.target.select() }
           />
           <Form.Control.Feedback type="invalid">Cannot be empty </Form.Control.Feedback>
         </>
