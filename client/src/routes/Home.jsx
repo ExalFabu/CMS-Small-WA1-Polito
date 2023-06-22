@@ -199,6 +199,9 @@ const Home = () => {
         {filteredPages.map((page) => {
           return <PageCard key={page.id} page={page} user={user} forcedFrontOffice={forcedFrontOffice} />;
         })}
+        {filteredPages.length === 0 && (
+          <h1 className="text-center mt-5">No pages found</h1>
+        )}
       </Container>
       {canCreatePage ? (
         <Container className="my-5 d-flex justify-content-center">
