@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import React, { useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { Button, Col, Container, FloatingLabel, Form, Row } from "react-bootstrap";
 import { useLoaderData, useNavigate, useSearchParams } from "react-router-dom";
 import PageCard from "../components/PageCard";
@@ -17,12 +17,53 @@ const FILTERS = {
 };
 
 const SORTS = {
-  oldest: { value: "oldest", label: "Date(ASC)", callback: (a, b) => dayjs(a.published_at).isBefore(dayjs(b.published_at)) ? -1 : 1 },
-  newest: { value: "newest", label: "Date(DESC)", callback: (a, b) => dayjs(a.published_at).isAfter(dayjs(b.published_at)) ? -1 : 1 },
+  oldest: { value: "creation", label: "Creation", callback: (a, b) => dayjs(a.created_at).startOf("day").isBefore(dayjs(b.created_at).startOf("day")) ? -1 : 1 },
+  newest: { value: "publish", label: "Publish", callback: (a, b) => dayjs(a.published_at.startOf("day")).isAfter(dayjs(b.published_at).startOf("day")) ? -1 : 1 },
   title: { value: "title", label: "Title", callback: (a, b) => a.title.localeCompare(b.title) },
   author: { value: "author", label: "Author", callback: (a, b) => a.author_name.localeCompare(b.author_name) }
 };
 
+const SORT_DIRECTION = {
+  desc: { value: "desc", label: "DESC", callback: (pages) => Array.from(pages).reverse() },
+  asc: { value: "asc", label: "ASC", callback: (pages) => pages }
+}
+
+
+const ThreeWayCheckbox = ({ id, label, onChange, selected }) => {
+  const states = ["⇓", "⇧"];
+  const [checkState, setCheckState] = React.useState(0);
+
+  const handleChange = useCallback(() => {
+    const newState = (checkState + 1) % 2;
+    if (newState === 0) {
+      onChange(id, "desc");
+    } else {
+      onChange(id, "asc");
+    }
+
+    setCheckState(newState);
+  }, [checkState, id, onChange]);
+
+  return <Button
+    variant="none"
+    id={id}
+    name={id}
+    value={id}
+    onClick={handleChange}
+    size="sm"
+    className={selected ? "text-primary" : ""}
+  >
+    {selected ? `${states[checkState]}${label}` : label}
+  </Button>
+
+}
+
+ThreeWayCheckbox.propTypes = {
+  id: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  selected: PropTypes.bool.isRequired
+};
 
 
 const FilterTopBar = ({ isBackOffice }) => {
@@ -30,13 +71,19 @@ const FilterTopBar = ({ isBackOffice }) => {
   const [searchName, setSearchName] = React.useState(searchParam.get("name") || "");
   const [filterRadio, setFilterRadio] = React.useState(searchParam.get("filter") || "all");
   const [sortsRadio, setSortsRadio] = React.useState(searchParam.get("sort") || "oldest");
-
+  const [sortDirection, setSortDirection] = React.useState(searchParam.get("sortDirection") || "desc");
 
 
 
   useEffect(() => {
-    setSearchParam((otherParams) => ({ ...(Object.fromEntries(otherParams.entries())), name: searchName, filter: filterRadio, sort: sortsRadio }));
-  }, [filterRadio, searchName, sortsRadio, setSearchParam]); // To trigger the effect whenever the params change
+    setSearchParam((otherParams) => ({
+      ...(Object.fromEntries(otherParams.entries())),
+      name: searchName,
+      filter: filterRadio,
+      sort: sortsRadio,
+      sortDirection: sortDirection
+    }));
+  }, [filterRadio, searchName, sortsRadio, sortDirection, setSearchParam]); // To trigger the effect whenever the params change
 
   const handleSubmit = (event) => {
     event?.preventDefault();
@@ -66,19 +113,14 @@ const FilterTopBar = ({ isBackOffice }) => {
         <Form.Label className="w-100 mb-0">Sort by</Form.Label>
         <div className="w-100">
           {Object.entries(SORTS).map(([_, sort]) => { // eslint-disable-line no-unused-vars
-            return <Form.Check
-              key={sort.value}
-              id={`sort-radio-${sort.value}`}
-              inline
-              type="radio"
-              name="sort"
-              value={sort.value}
-              label={sort.label}
-              checked={sortsRadio === sort.value}
-              onChange={(event) => setSortsRadio(event.target.value)}
-            />
+            return <ThreeWayCheckbox key={sort.value} id={sort.value}
+              label={sort.label} selected={sortsRadio === sort.value} onChange={(sortClicked, sortDirection) => {
+                setSortsRadio(sortClicked);
+                setSortDirection(sortDirection);
+              }} />
           })
           }
+
         </div>
       </Col>
       {isBackOffice && (<Col className="d-flex justify-content-end flex-wrap text-center">
@@ -114,10 +156,13 @@ FilterTopBar.propTypes = {
   isBackOffice: PropTypes.bool
 };
 
-const applyFiltersNSorts = (pages, filter, sort, name, user_id) => {
+const applyFiltersNSorts = (pages, filter, sort, sortDirection, name, user_id) => {
   pages = pages.filter((page) => name == "" || page.title.toLowerCase().includes(name.toLowerCase()));
-  const sorted = pages.sort(SORTS[sort].callback);
-  return sorted.filter((page) => FILTERS[filter].callback(page, user_id));
+  if (SORTS[sort])
+    pages = pages.sort(SORTS[sort].callback);
+  if (SORT_DIRECTION[sortDirection])
+    pages = SORT_DIRECTION[sortDirection].callback(pages);
+  return pages.filter((page) => FILTERS[filter].callback(page, user_id));
 }
 
 
@@ -136,8 +181,9 @@ const Home = ({ user }) => {
   useEffect(() => {
     const name = searchParam.get("name") || "";
     const filter = searchParam.get("filter") || "all";
-    const sorts = searchParam.get("sort") || "oldest";
-    const appliedFilters = applyFiltersNSorts(pages, filter, sorts, name, user?.id);
+    const sorts = searchParam.get("sort") || "publish";
+    const sortDirection = searchParam.get("sortDirection") || "desc";
+    const appliedFilters = applyFiltersNSorts(pages, filter, sorts, sortDirection, name, user?.id);
 
     if (forcedFrontOffice) {
       setFilteredPages(appliedFilters.filter(pageIsPublished));
