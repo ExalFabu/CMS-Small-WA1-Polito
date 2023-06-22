@@ -7,13 +7,13 @@ CMSmall - AW1 Exam Project by Alexandro Buffa - s316999
 
 ### Todo
 
-- [ ] Delete all Pages and go through everything again for a final check  
 
 ### In Progress
 
 
 ### Done ✓
 
+- [x] Delete all Pages and go through everything again for a final check  
 - [x] Context for users? Think about it  
 - [x] Check API Error messages  
 - [x] remove useless filters from backend  
