@@ -50,8 +50,7 @@ const PageCard = ({ page, user, forcedFrontOffice }) => {
       <style>
         {`
           .pageCard {
-            min-width: 20%;
-            max-width: 48%;  
+            width: 367px;
             transition: all 0.3s ease-in-out;
           }
             .pageCard:hover {
@@ -63,7 +62,7 @@ const PageCard = ({ page, user, forcedFrontOffice }) => {
           }
       `}
       </style>
-      <Card className="m-2 pageCard" onClick={goToPage}>
+      <Card className="m-2 pageCard" onClick={goToPage} aria-label="Open Page">
         <Card.Body >
           <Card.Title>{page.title}</Card.Title>
           <Card.Subtitle className="mb-2 text-muted">

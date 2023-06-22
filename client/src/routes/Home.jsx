@@ -180,16 +180,12 @@ const Home = ({ user }) => {
 
   useEffect(() => {
     const name = searchParam.get("name") || "";
-    const filter = searchParam.get("filter") || "all";
+    const filter = forcedFrontOffice ? "published" : searchParam.get("filter") || "all";
     const sorts = searchParam.get("sort") || "publish";
     const sortDirection = searchParam.get("sortDirection") || "desc";
     const appliedFilters = applyFiltersNSorts(pages, filter, sorts, sortDirection, name, user?.id);
 
-    if (forcedFrontOffice) {
-      setFilteredPages(appliedFilters.filter(pageIsPublished));
-    } else {
-      setFilteredPages(appliedFilters);
-    }
+    setFilteredPages(appliedFilters);
   }, [forcedFrontOffice, pages, searchParam, user]);
 
   const navigator = useNavigate();
