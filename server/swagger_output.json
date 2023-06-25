@@ -84,6 +84,12 @@
           "200": {
             "description": "Site name successfully updated"
           },
+          "400": {
+            "description": "Invalid name",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
           "401": {
             "description": "Not authorized",
             "schema": {
