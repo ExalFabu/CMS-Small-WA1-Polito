@@ -98,7 +98,7 @@ const Page = ({ isNew = false }) => {
     setPageHasBeenEdited(true);
   };
 
-  const editable = useMemo(() => (user && (user.role === "admin" || user.id === page.author) && !forcedFrontOffice), [user, page.author, forcedFrontOffice]);
+  const editable = useMemo(() => (!!user && (user.role === "admin" || user.id === page.author) && !forcedFrontOffice), [user, page.author, forcedFrontOffice]);
 
   const saveEditedPage = useCallback(() => {
     const finalPage = { ...editedPage }

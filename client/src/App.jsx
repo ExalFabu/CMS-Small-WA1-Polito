@@ -17,6 +17,7 @@ import ErrorHandler from "./components/ErrorHandler";
 import NotFound from "./routes/404";
 import { Spinner } from "react-bootstrap";
 import PropTypes from 'prop-types';
+import { URL } from "./api";
 
 const CHECK_AUTH_INTERVAL = 1000 * 60 * 5; // 5 minutes
 
@@ -78,12 +79,12 @@ function App() {
 const NetCheckWrapper = ({ children }) => {
   const [isOnline, setIsOnline] = useState(false);
 
-  const url = "http://localhost:3001/api/auth/me"; // Any endpoint does the job... catch on fetch fails only on network errors.
+  const check_url = `${URL}/auth/me`; // Any endpoint does the job... catch on fetch fails only on network errors.
 
   useEffect(() => {
     if (isOnline) return;
     const interval = setInterval(() => {
-      fetch(url).then(() => { 
+      fetch(check_url).then(() => { 
         setIsOnline(true);
       }).catch(() => {
         setIsOnline(false);

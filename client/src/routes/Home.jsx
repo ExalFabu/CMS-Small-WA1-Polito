@@ -18,8 +18,8 @@ const FILTERS = {
 };
 
 const SORTS = {
-  creation: { value: "creation", label: "Creation", callback: (a, b) => dayjs(a.created_at).startOf("day").isBefore(dayjs(b.created_at).startOf("day")) ? -1 : 1 },
   publish: { value: "publish", label: "Publish", callback: (a, b) => dayjs(a.published_at).startOf("day").isAfter(dayjs(b.published_at).startOf("day")) ? 1 : -1 },
+  creation: { value: "creation", label: "Creation", callback: (a, b) => dayjs(a.created_at).startOf("day").isBefore(dayjs(b.created_at).startOf("day")) ? -1 : 1 },
   title: { value: "title", label: "Title", callback: (a, b) => a.title.localeCompare(b.title) },
   author: { value: "author", label: "Author", callback: (a, b) => a.author_name.localeCompare(b.author_name) }
 };
@@ -31,7 +31,7 @@ const SORT_DIRECTION = {
 
 
 const ThreeWayCheckbox = ({ id, label, onChange, selected }) => {
-  const states = ["⇓", "⇧"];
+  const states = ["↓", "↑"];
   const [checkState, setCheckState] = React.useState(0);
 
   const handleChange = useCallback(() => {
