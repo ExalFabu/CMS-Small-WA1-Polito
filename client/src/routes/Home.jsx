@@ -71,8 +71,8 @@ const FilterTopBar = ({ isBackOffice }) => {
   const [searchParam, setSearchParam] = useSearchParams();
   const [searchName, setSearchName] = React.useState(searchParam.get("name") || "");
   const [filterRadio, setFilterRadio] = React.useState(searchParam.get("filter") || "all");
-  const [sortsRadio, setSortsRadio] = React.useState(searchParam.get("sort") || "creation");
-  const [sortDirection, setSortDirection] = React.useState(searchParam.get("sortDirection") || "desc");
+  const [sortsRadio, setSortsRadio] = React.useState(searchParam.get("sort") || "publish");
+  const [sortDirection, setSortDirection] = React.useState(searchParam.get("sortDirection") || "asc");
 
 
 
@@ -184,7 +184,7 @@ const Home = () => {
     const name = searchParam.get("name") || "";
     const filter = forcedFrontOffice ? "published" : searchParam.get("filter") || "all";
     const sorts = searchParam.get("sort") || "publish";
-    const sortDirection = searchParam.get("sortDirection") || "desc";
+    const sortDirection = searchParam.get("sortDirection") || "asc";
     const appliedFilters = applyFiltersNSorts(pages, filter, sorts, sortDirection, name, user?.id);
 
     setFilteredPages(appliedFilters);
