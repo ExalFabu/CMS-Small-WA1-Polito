@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import { isFrontOfficeViewWrapper } from '../components/header/Header'
 import { userContext } from "../App";
 
-const pageIsPublished = (page) => dayjs(page.published_at).isBefore(dayjs());
+const pageIsPublished = (page) => dayjs(page.published_at).isValid() && dayjs(page.published_at).startOf("day").isBefore(dayjs());
 
 const FILTERS = {
   all: { value: "all", label: "All", callback: () => true },
@@ -32,7 +32,9 @@ const SORT_DIRECTION = {
 
 const ThreeWayCheckbox = ({ id, label, onChange, selected }) => {
   const states = ["↓", "↑"];
-  const [checkState, setCheckState] = React.useState(0);
+  const [checkState, setCheckState] = React.useState(1);
+
+
 
   const handleChange = useCallback(() => {
     const newState = (checkState + 1) % 2;
@@ -178,7 +180,7 @@ const Home = () => {
   }, [searchParam, user]);
 
 
-  const canCreatePage = useMemo(() => (user && (user.role === "admin" || user.role === "editor") && !forcedFrontOffice), [user, forcedFrontOffice])
+  const canCreatePage = useMemo(() => (!!user && (user.role === "admin" || user.role === "editor") && !forcedFrontOffice), [user, forcedFrontOffice])
 
   useEffect(() => {
     const name = searchParam.get("name") || "";
@@ -213,12 +215,5 @@ const Home = () => {
     </div>
   );
 };
-
-// Home.propTypes = {
-//   user: PropTypes.shape({
-//     id: PropTypes.number,
-//     role: PropTypes.string,
-//   })
-// };
 
 export default Home;
